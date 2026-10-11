@@ -1,0 +1,719 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Role enum removed - using RBAC system with RoleDefinition table instead
+
+model companies {
+  company_id            String                @id @db.VarChar
+  company_name          String                @db.VarChar(255)
+  company_address       String?               @db.VarChar(255)
+  company_phone         String?
+  company_email         String                @unique @db.VarChar(255)
+  isBanned              Boolean               @default(false)
+  subscribtion_fee      Decimal?              @db.Money
+  subscription_end_date DateTime?             @db.Date
+  taxable               Boolean?              @default(false)
+  tax_percentage        Float?                @default(5)
+  debt                  Decimal?              @default(0) @db.Money
+  created_at            DateTime?             @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at            DateTime?             @default(dbgenerated("CURRENT_DATE")) @db.Date
+  company_users         company_users[]
+  customers             customers[]
+  employees             employees[]
+  other_expenses        other_expenses[]
+  vendors               vendors[]
+  Invoice               Invoice[]
+  payments              Paid_company[]
+  created_by            Int? // Reference to the user that created the company
+  created_by_user       main_users?           @relation(fields: [created_by], references: [id])
+  jobs                  Jobs[]
+  services              Service[]
+  service_sales         service_sales[]
+  transferMonies        Transfer_Money[] // Legacy - to be deprecated
+  treasury              Treasury?
+  treasuryLegacy        TreasuryLegacy[]
+  newTransfers          MoneyTransfer[]  @relation("SenderBranch")
+  receivedTransfers     MoneyTransfer[]  @relation("ReceiverBranch")
+  warehouse_transfers   warehouse_transfers[]
+  warehouses            warehouses[]     // Company store(s) for receiving transfers and purchases
+  store_companies       store_companies[] // Stores where this company can sell (multi-store link)
+}
+
+// Store: name, description, location. One store can be linked to many companies (companies sell on store).
+model stores {
+  store_id    String            @id @default(uuid()) @db.VarChar
+  store_name  String            @db.VarChar(255)
+  description String?           @db.VarChar(500)
+  location    String?           @db.VarChar(255)
+  created_at  DateTime         @default(now())
+  updated_at  DateTime         @updatedAt
+  store_companies store_companies[]
+  store_stock     store_stock[]
+}
+
+model store_companies {
+  store_id   String   @db.VarChar
+  company_id String   @db.VarChar
+  store      stores   @relation(fields: [store_id], references: [store_id], onDelete: Cascade)
+  company    companies @relation(fields: [company_id], references: [company_id], onDelete: Cascade)
+  created_at DateTime @default(now())
+
+  @@id([store_id, company_id])
+  @@map("store_companies")
+}
+
+model store_stock {
+  stock_id   Int      @id @default(autoincrement())
+  store_id   String   @db.VarChar
+  product_id Int
+  quantity   Decimal  @default(0) @db.Decimal(12, 4)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  store      stores   @relation(fields: [store_id], references: [store_id], onDelete: Cascade)
+  product    products @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+
+  @@unique([store_id, product_id])
+  @@index([store_id])
+  @@index([product_id])
+  @@map("store_stock")
+}
+
+model Treasury {
+  id           String                @id @default(uuid())
+  company_id   String                @unique
+  company      companies             @relation(fields: [company_id], references: [company_id])
+  balance      Decimal               @default(0) @db.Money
+  transactions TreasuryTransaction[]
+  created_at   DateTime              @default(now())
+  updated_at   DateTime              @updatedAt
+
+  @@map("TreasuryBalance")
+}
+
+model TreasuryTransaction {
+  id               String      @id @default(uuid())
+  treasury_id      String
+  treasury         Treasury    @relation(fields: [treasury_id], references: [id])
+  amount           Decimal     @db.Money
+  type             TransactionAuditType
+  category         TransactionCategory
+  reference_id     String?     // ID of the related Sale, Transfer, etc.
+  description      String?     @db.VarChar(500)
+  snapshot_balance Decimal     @db.Money
+  created_at       DateTime    @default(now())
+  created_by       Int
+}
+
+enum TransactionAuditType {
+  DEBIT  // Increase balance
+  CREDIT // Decrease balance
+}
+
+enum TransactionCategory {
+  SALE
+  SERVICE_SALE
+  TRANSFER_OUT
+  TRANSFER_IN
+  TRANSFER_CANCELLED
+  REVERSAL
+  EXPENSE
+  MANUAL_ADJUSTMENT // Reserved for superAdmin only
+}
+
+model MoneyTransfer {
+  id                    String         @id @default(uuid())
+  sender_company_id     String
+  sender                companies      @relation("SenderBranch", fields: [sender_company_id], references: [company_id])
+  
+  receiver_id           String         // company_id (BRANCH) or bank/account id (BANK) - no FK for BANK
+  receiver_company_id   String?        // Only set when receiver_type=BRANCH; enables receiver_branch join
+  receiver_type         TransferReceiverType
+  
+  receiver_branch       companies?     @relation("ReceiverBranch", fields: [receiver_company_id], references: [company_id])
+
+  amount                Decimal        @db.Money
+  status            TransferStatus @default(PENDING)
+  reference_id      String         @unique // Human readable ref
+  
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @updatedAt
+  created_by        Int
+  confirmed_by      Int?
+  confirmed_at      DateTime?
+}
+
+enum TransferReceiverType {
+  BRANCH
+  BANK
+}
+
+enum TransferStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+model Paid_company {
+  id              Int       @id @default(autoincrement())
+  company_id      String    @db.VarChar
+  bank_id         Int?
+  company         companies @relation(fields: [company_id], references: [company_id])
+  banks           banks?    @relation(fields: [bank_id], references: [bank_id])
+  expected_amount Decimal   @db.Money
+  amount_paid     Decimal   @db.Money
+  payment_date    DateTime  @db.Date
+  start_date      DateTime  @db.Date
+  end_date        DateTime  @db.Date
+  months_covered  Int
+  created_at      DateTime  @default(now()) @db.Date
+  updated_at      DateTime  @default(now()) @db.Date
+}
+
+model banks {
+  bank_id        Int              @id @default(autoincrement())
+  bank_name      String           @unique
+  amount         Decimal?         @default(0) @db.Money
+  is_closed      Boolean          @default(false)
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now()) @db.Date
+  
+  payments       Paid_company[]
+  other_expenses other_expenses[]
+  Transfer_Money Transfer_Money[]
+}
+
+model customers {
+  customer_id      Int             @id @default(autoincrement())
+  customer_name    String          @db.VarChar(64)
+  customer_address String          @db.VarChar(255)
+  customer_phone   String          @db.VarChar(64)
+  company_id       String?         @db.VarChar
+  created_at       DateTime?       @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at       DateTime?       @default(dbgenerated("CURRENT_DATE")) @db.Date
+  companies        companies?      @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+  product_sales    product_sales[]
+  service_sales    service_sales[]
+  Invoice          Invoice[]
+}
+
+/// Inventory batches: each row is a purchase of a **product** (see `product_id`).  
+/// **item_cost** is the real unit cost for that batch — reports & profit use this, not `products.product_cost`.
+model product_purchases {
+  purchase_id       Int             @id @default(autoincrement())
+  purchase_qty      Decimal         @db.Decimal(12, 4)
+  item_cost         Decimal         @db.Money
+  purchase_discount Decimal         @db.Money
+  paid_amount       Decimal         @db.Money
+  purchase_debt     Decimal         @db.Money
+  expiry_date       DateTime?       @db.Date
+  manufacture_date  DateTime?       @db.Date
+  vendor_id         Int?
+  product_id        Int?
+  container_number  String?         @db.VarChar(64)
+  extra_cost        Decimal         @default(0) @db.Money
+  created_at        DateTime?       @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at        DateTime?       @default(dbgenerated("CURRENT_DATE")) @db.Date
+  products          products?       @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+  vendors           vendors?        @relation(fields: [vendor_id], references: [vendor_id], onDelete: NoAction, onUpdate: NoAction)
+  product_sales     product_sales[]
+  cost_entries      purchase_cost_entries[]
+  payment_entries   purchase_payment_entries[]
+}
+
+/// Extra costs added to a purchase. Each row is also the transaction history shown on Purchase Details.
+model purchase_cost_entries {
+  id          Int               @id @default(autoincrement())
+  purchase_id Int
+  amount      Decimal           @db.Money
+  description String?           @db.VarChar(500)
+  created_at  DateTime          @default(now())
+  purchase    product_purchases @relation(fields: [purchase_id], references: [purchase_id], onDelete: Cascade)
+
+  @@index([purchase_id])
+  @@map("purchase_cost_entries")
+}
+
+/// Debt payments against a purchase. Shown on Purchase Details with the purchase container number.
+model purchase_payment_entries {
+  id          Int               @id @default(autoincrement())
+  purchase_id Int
+  amount      Decimal           @db.Money
+  discount    Decimal           @default(0) @db.Money
+  description String?           @db.VarChar(500)
+  created_at  DateTime          @default(now())
+  purchase    product_purchases @relation(fields: [purchase_id], references: [purchase_id], onDelete: Cascade)
+
+  @@index([purchase_id])
+  @@map("purchase_payment_entries")
+}
+
+/// Catalog item. **product_cost** is optional reference only.  
+/// True cost for sales/COGS comes from **product_purchases** (`item_cost` per batch) via `products.product_purchases`.
+model products {
+  product_id           Int                   @id @default(autoincrement())
+  product_code         String                @db.VarChar(255)
+  product_name         String                @db.VarChar(255)
+  product_cost         Decimal?              @db.Money  // optional reference; COGS = product_purchases.item_cost
+  product_price        Decimal               @db.Money
+  product_alert_number Int?                  @default(30)
+  category             String?               @db.VarChar(100)
+  description          String?               @db.VarChar(500)
+  created_at           DateTime?             @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at           DateTime?             @default(dbgenerated("CURRENT_DATE")) @db.Date
+  product_purchases    product_purchases[]
+  InvoiceItem          InvoiceItem[]
+  warehouse_stock      warehouse_stock[]
+  warehouse_transfers  warehouse_transfers[]
+  store_stock          store_stock[]
+}
+
+model vendors {
+  vendor_id         Int                 @id @default(autoincrement())
+  vendor_name       String              @db.VarChar(255)
+  vendor_address    String              @db.VarChar(255)
+  vendor_email      String              @db.VarChar(255)
+  vendor_phone      String              @db.VarChar(64)
+  company_id        String?             @db.VarChar
+  created_at        DateTime?           @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at        DateTime?           @default(dbgenerated("CURRENT_DATE")) @db.Date
+  product_purchases product_purchases[]
+  companies         companies?          @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model product_sales {
+  sale_id           Int                @id @default(autoincrement())
+  sale_qty          Decimal            @db.Decimal(12, 4)
+  item_price        Decimal            @db.Money
+  sale_discount     Decimal            @db.Money
+  received_amount   Decimal            @db.Money
+  unit_cost         Decimal?           @db.Money // cost captured at sale time (single source of truth for reports)
+  cost_source       String?            @db.VarChar(32) // PURCHASE | STOCK | LATEST_PURCHASE | PRODUCT_DEFAULT
+  customer_id       Int?
+  /// When set: COGS uses **product_purchases.item_cost** for that batch (purchase row → `product_id` → product).
+  purchase_id       Int?
+  stock_id          Int?               // When selling from company store (warehouse_stock)
+  created_at        DateTime?          @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at        DateTime?          @default(dbgenerated("CURRENT_DATE")) @db.Date
+  taxable_sale      Boolean?           @default(false)
+  sold_by           Int?
+  Invoice           Invoice[]
+  customers         customers?         @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+  product_purchases product_purchases? @relation(fields: [purchase_id], references: [purchase_id], onDelete: NoAction, onUpdate: NoAction)
+  warehouse_stock   warehouse_stock?   @relation(fields: [stock_id], references: [stock_id], onDelete: NoAction, onUpdate: NoAction)
+  company_users     company_users?     @relation(fields: [sold_by], references: [user_id])
+}
+
+model employees {
+  employee_id      Int        @id @default(autoincrement())
+  employee_name    String     @db.VarChar(64)
+  employee_address String     @db.VarChar(255)
+  employee_phone   String     @db.VarChar(64)
+  salary_amount    Decimal    @db.Money
+  company_id       String?    @db.VarChar
+  created_at       DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at       DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  companies        companies? @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+  salaries         salaries[]
+}
+
+model other_expenses {
+  expense_id  Int        @id @default(autoincrement())
+  item_name   String     @db.VarChar(64)
+  item_qty    Int
+  item_cost   Decimal    @db.Money
+  paid_amount Decimal    @db.Money
+  date        DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  company_id  String?    @db.VarChar
+  bank_id     Int?
+  created_at  DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at  DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  companies   companies? @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+  banks       banks?     @relation(fields: [bank_id], references: [bank_id])
+}
+
+model salaries {
+  salary_id   Int        @id @default(autoincrement())
+  paid_amount Decimal    @db.Money
+  date        DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  employee_id Int?
+  created_at  DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at  DateTime?  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  employees   employees? @relation(fields: [employee_id], references: [employee_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model comp_users_refresh_tokens {
+  id            Int            @id @default(autoincrement())
+  token         String         @unique @db.VarChar(255)
+  expiry_date   DateTime?      @default(dbgenerated("CURRENT_DATE")) @db.Date
+  user_id       Int?
+  company_users company_users? @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model company_users {
+  user_id                   Int                         @id @default(autoincrement())
+  full_name                 String                      @db.VarChar
+  email                     String                      @unique @db.VarChar(255)
+  password                  String                      @db.VarChar(255)
+  company_id                String?                     @db.VarChar
+  create_at                 DateTime?                   @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at                DateTime?                   @default(dbgenerated("CURRENT_DATE")) @db.Date
+  comp_users_refresh_tokens comp_users_refresh_tokens[]
+  product_sales             product_sales[]
+  service_sales             service_sales[]
+  companies                 companies?                  @relation(fields: [company_id], references: [company_id], onDelete: NoAction, onUpdate: NoAction)
+  user_roles                UserRole[]
+}
+
+model Users {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String
+}
+
+model main_users {
+  id             Int                         @id @default(autoincrement())
+  full_name      String                      @db.VarChar
+  email          String                      @unique @db.VarChar(255)
+  password       String                      @db.VarChar(255)
+  created_at     DateTime?                   @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at     DateTime?                   @default(dbgenerated("CURRENT_DATE")) @db.Date
+  companies      companies[]
+  user_roles     MainUserRole[]
+  refresh_tokens main_users_refresh_tokens[]
+}
+
+model Invoice {
+  id                     String              @id @default(uuid())
+  invoice_number         String              @unique
+  issue_date             DateTime            @default(now())
+  due_date               DateTime
+  status                 InvoiceStatus       @default(DRAFT)
+  total_amount           Decimal             @db.Money
+  tax_amount             Decimal             @db.Money
+  total_paid_amount      Decimal?            @db.Money
+  total_discount_amount  Decimal?            @db.Money
+  company_id             String
+  customer_id            Int?
+  created_at             DateTime            @default(now())
+  updated_at             DateTime            @updatedAt
+  sale_id                Int?                @unique
+  service_sale_id        String?             @unique
+  product_sales          product_sales?      @relation(fields: [sale_id], references: [sale_id])
+  service_sales          service_sales?     @relation(fields: [service_sale_id], references: [id])
+  company                companies           @relation(fields: [company_id], references: [company_id])
+  customer               customers?          @relation(fields: [customer_id], references: [customer_id])
+  items                  InvoiceItem[]
+  service_items          InvoiceServiceItem[]
+}
+
+model InvoiceItem {
+  id         Int     @id @default(autoincrement())
+  quantity   Decimal @db.Decimal(12, 4)
+  unit_price Decimal @db.Money
+  discount   Decimal @db.Money
+  product_id Int
+  invoice_id String
+
+  product products @relation(fields: [product_id], references: [product_id])
+  invoice Invoice  @relation(fields: [invoice_id], references: [id])
+}
+
+model InvoiceServiceItem {
+  id          Int     @id @default(autoincrement())
+  quantity    Int
+  unit_price  Decimal @db.Money
+  discount    Decimal @db.Money
+  service_id  String
+  invoice_id  String
+  description String? @db.VarChar(255)
+
+  service Service @relation(fields: [service_id], references: [id])
+  invoice Invoice @relation(fields: [invoice_id], references: [id])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PAID
+  PARTIAL
+  OVERDUE
+  VOID
+}
+
+model Jobs {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  company_id  String
+  Company     companies @relation(fields: [company_id], references: [company_id])
+  is_deleted  Boolean   @default(false)
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  services    Service[]
+}
+
+model Service {
+  id String @id @default(uuid())
+
+  job_id String
+  Job    Jobs   @relation(fields: [job_id], references: [id])
+
+  name String // e.g. "A4 Copy B/W"
+  unit String // pages, books, pcs
+
+  unit_price Decimal @db.Decimal(10, 2) // ✅ money safe
+
+  company_id String
+  Company    companies @relation(fields: [company_id], references: [company_id])
+
+  is_active  Boolean @default(true)
+  is_deleted Boolean @default(false)
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  service_sale_items   service_sale_items[]
+  InvoiceServiceItem   InvoiceServiceItem[]
+
+  @@index([job_id])
+  @@index([company_id])
+}
+
+// Service sale = one transaction (like product_sales), can have multiple service line items
+model service_sales {
+  id              String    @id @default(uuid())
+  company_id      String    @db.VarChar
+  customer_id     Int?
+  sold_by         Int?
+  total_amount    Decimal   @db.Money
+  sale_discount   Decimal   @db.Money
+  received_amount Decimal   @db.Money
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  company         companies       @relation(fields: [company_id], references: [company_id])
+  customer        customers?      @relation(fields: [customer_id], references: [customer_id])
+  company_users   company_users?  @relation(fields: [sold_by], references: [user_id])
+  items           service_sale_items[]
+  Invoice         Invoice[]
+}
+
+model service_sale_items {
+  id              Int      @id @default(autoincrement())
+  service_sale_id String
+  service_id      String
+  quantity        Int
+  unit_price      Decimal  @db.Money
+  discount        Decimal  @db.Money
+
+  service_sale    service_sales @relation(fields: [service_sale_id], references: [id], onDelete: Cascade)
+  service         Service       @relation(fields: [service_id], references: [id])
+}
+
+model banking_accounts {
+  account_id   String                 @id @default(uuid())
+  account_name String                 @db.VarChar(255)
+  balance      Decimal                @default(0) @db.Money
+  created_at   DateTime               @default(now())
+  updated_at   DateTime               @updatedAt
+  transactions banking_transactions[]
+}
+
+model banking_transactions {
+  transaction_id String           @id @default(uuid())
+  account_id     String
+  account        banking_accounts @relation(fields: [account_id], references: [account_id], onDelete: Cascade)
+  amount         Decimal          @db.Money
+  type           TransactionType
+  description    String?          @db.VarChar(500)
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @updatedAt
+
+  @@index([account_id])
+}
+
+enum TransactionType {
+  deposit
+  withdrawal
+}
+
+enum Method {
+  ZAAD
+  EDAHAB
+}
+
+// Legacy treasury (per-company cash box) - distinct from Treasury (audit/transactions). Table name stays "Treasury" for existing DB.
+model TreasuryLegacy {
+  treasury_id   Int              @id @default(autoincrement())
+  name         String           @db.VarChar(255)
+  balance      Decimal?         @default(0) @db.Money
+  company_id   String?          @db.VarChar
+  created_at   DateTime         @default(now())
+  updated_at   DateTime         @updatedAt
+
+  company        companies?      @relation(fields: [company_id], references: [company_id])
+  transferMonies Transfer_Money[]
+
+  @@map("Treasury")
+}
+
+model Transfer_Money {
+  transaction_id Int      @id @default(autoincrement())
+  amount         Decimal  @db.Money
+  payment_method Method
+  bank_id        Int?
+  treasury_id    Int      // required
+  currency_type  String   @db.VarChar(64)
+  company_id     String?  @db.VarChar
+  created_at     DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+  updated_at     DateTime @default(dbgenerated("CURRENT_DATE")) @db.Date
+
+  banks     banks?     @relation(fields: [bank_id], references: [bank_id])
+  companies companies? @relation(fields: [company_id], references: [company_id])
+  treasury  TreasuryLegacy   @relation(fields: [treasury_id], references: [treasury_id])
+}
+
+// ============================================
+// ROLES AND PERMISSIONS SYSTEM
+// ============================================
+
+// Role definition table (replaces enum for flexibility)
+model RoleDefinition {
+  id              Int              @id @default(autoincrement())
+  name            String           @unique @db.VarChar(50)
+  description     String?          @db.VarChar(255)
+  is_active       Boolean          @default(true)
+  created_at      DateTime         @default(now())
+  updated_at      DateTime         @updatedAt
+  permissions     RolePermission[]
+  user_roles      UserRole[]
+  main_user_roles MainUserRole[]
+}
+
+// Granular permissions for fine-grained access control
+model Permission {
+  id          Int              @id @default(autoincrement())
+  name        String           @unique @db.VarChar(100)
+  resource    String           @db.VarChar(50)
+  action      String           @db.VarChar(50)
+  description String?          @db.VarChar(255)
+  created_at  DateTime         @default(now())
+  roles       RolePermission[]
+}
+
+// Junction table for Role-Permission many-to-many
+model RolePermission {
+  id            Int            @id @default(autoincrement())
+  role_id       Int
+  permission_id Int
+  role          RoleDefinition @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission    Permission     @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+  created_at    DateTime       @default(now())
+
+  @@unique([role_id, permission_id])
+}
+
+// Junction table for CompanyUser-Role many-to-many
+model UserRole {
+  id         Int            @id @default(autoincrement())
+  user_id    Int
+  role_id    Int
+  company_id String         @db.VarChar
+  user       company_users  @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  role       RoleDefinition @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  created_at DateTime       @default(now())
+
+  @@unique([user_id, role_id])
+}
+
+// Junction table for MainUser-Role many-to-many
+model MainUserRole {
+  id         Int            @id @default(autoincrement())
+  user_id    Int
+  role_id    Int
+  user       main_users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role       RoleDefinition @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  created_at DateTime       @default(now())
+
+  @@unique([user_id, role_id])
+}
+
+// Refresh tokens for main users
+model main_users_refresh_tokens {
+  id          Int        @id @default(autoincrement())
+  token       String     @unique @db.VarChar(255)
+  expiry_date DateTime   @db.Timestamp
+  user_id     Int
+  main_user   main_users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  created_at  DateTime   @default(now())
+}
+model warehouses {
+  warehouse_id   Int                   @id @default(autoincrement())
+  warehouse_name String                @db.VarChar(255)
+  location       String?               @db.VarChar(255)
+  description    String?               @db.VarChar(500)
+  is_active      Boolean               @default(true)
+  is_default     Boolean               @default(false)
+  company_id     String?               @db.VarChar
+  created_at     DateTime              @default(now())
+  updated_at     DateTime              @updatedAt
+  company        companies?            @relation(fields: [company_id], references: [company_id], onDelete: Cascade)
+  stock          warehouse_stock[]
+  transfers      warehouse_transfers[]  // outbound
+  transfers_in   warehouse_transfers[]   @relation("TransferToWarehouse")  // inbound
+
+  @@index([company_id])
+}
+
+model warehouse_stock {
+  stock_id     Int        @id @default(autoincrement())
+  warehouse_id Int
+  product_id   Int
+  quantity     Decimal    @default(0) @db.Decimal(12, 4)
+  reserved_qty Int        @default(0)
+  unit_cost    Decimal?   @db.Money   // real cost from purchase when stock was received; used for sale report cost
+  created_at   DateTime   @default(now())
+  updated_at   DateTime   @updatedAt
+  warehouse      warehouses      @relation(fields: [warehouse_id], references: [warehouse_id], onDelete: Cascade)
+  product        products        @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  product_sales  product_sales[]
+  @@unique([warehouse_id, product_id])
+  @@index([warehouse_id])
+  @@index([product_id])
+}
+
+enum WarehouseTransferStatus {
+  PENDING
+  APPROVED
+  COMPLETED
+  CANCELLED
+}
+
+model warehouse_transfers {
+  transfer_id     Int                     @id @default(autoincrement())
+  warehouse_id    Int                     // source
+  to_warehouse_id Int?                    // destination (warehouse or store)
+  stock_id        Int?
+  company_id      String?                 // set when destination is a company store (for approval list)
+  product_id      Int
+  quantity        Decimal                 @db.Decimal(12, 4)
+  status          WarehouseTransferStatus @default(PENDING)
+  notes           String?                 @db.VarChar(500)
+  created_at      DateTime                @default(now())
+  completed_at    DateTime?
+  created_by      Int?
+  warehouse       warehouses              @relation(fields: [warehouse_id], references: [warehouse_id], onDelete: Cascade)
+  to_warehouse    warehouses?              @relation("TransferToWarehouse", fields: [to_warehouse_id], references: [warehouse_id], onDelete: Cascade)
+  product         products                @relation(fields: [product_id], references: [product_id], onDelete: Cascade)
+  company         companies?              @relation(fields: [company_id], references: [company_id], onDelete: Cascade)
+  @@index([warehouse_id])
+  @@index([to_warehouse_id])
+  @@index([company_id])
+  @@index([status])
+}

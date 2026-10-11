@@ -1,0 +1,5 @@
+node_modules
+# keep out build folder
+build
+.env
+node_modules

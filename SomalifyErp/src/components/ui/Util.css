@@ -1,0 +1,24 @@
+.container {
+    border-radius: 16px;
+    background-color: white;
+    margin: 8px auto;
+    padding: 12px;
+    width: 100%;
+    max-width: 770px;
+  }
+  
+  @media (max-width: 767px) {
+    .container {
+      max-width: 90%;
+    }
+  }
+  
+  .chart {
+    width: 100%;
+  }
+  
+  @media (max-width: 767px) {
+    .chart {
+      margin: 16px 0;
+    }
+  }

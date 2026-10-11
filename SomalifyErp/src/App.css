@@ -1,0 +1,32 @@
+canvas {
+  display: none !important; /* Hide canvas overlay */
+}
+
+video {
+  width: 100% !important;
+  height: auto !important;
+  object-fit: cover !important;
+}
+
+
+@media print {
+  @page {
+    size: auto;
+    margin: 15mm 10mm;
+  }
+  
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  
+  .invoice-container {
+    padding: 0 !important;
+    background: white !important;
+  }
+  
+  .print-watermark {
+    z-index: 9999;
+    opacity: 0.15;
+  }
+}

@@ -1,0 +1,35 @@
+/* Pay Now button in payables table */
+.pay-now-link {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pay-now-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #dc2626 0%, #db2777 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.pay-now-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.45);
+}
+
+@media (max-width: 768px) {
+  .MuiDataGrid-columnHeader {
+    font-size: 0.8rem;
+  }
+  .MuiDataGrid-cell {
+    font-size: 0.7rem;
+  }
+  .pay-now-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,17 @@
+Unexpected Application Error!
+Cannot read properties of undefined (reading 'IsSuccess')
+TypeError: Cannot read properties of undefined (reading 'IsSuccess')
+    at Banking (http://localhost:5173/src/Pages/Banking.tsx?t=1769350524932:86:20)
+    at renderWithHooks (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:11548:26)
+    at mountIndeterminateComponent (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:14926:21)
+    at beginWork (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:15914:22)
+    at beginWork$1 (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:19753:22)
+    at performUnitOfWork (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:19198:20)
+    at workLoopSync (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:19137:13)
+    at renderRootSync (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:19116:15)
+    at recoverFromConcurrentError (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:18736:28)
+    at performSyncWorkOnRoot (http://localhost:5173/node_modules/.vite/deps/chunk-WRD5HZVH.js?v=84720934:18879:28)
+💿 Hey developer 👋
+
+You can provide a way better UX than this when your app throws errors by providing your own ErrorBoundary or errorElement prop on your route.
+
