@@ -414,6 +414,7 @@ export const getReceivables = async (req: CustomUserRequest, res: Response): Pro
     const user = req.user as any;
     const isMainAdmin = !user?.company_id && (user?.roles || []).some((r: string) => ['admin', 'superAdmin', 'super_admin'].includes(r));
     // Company users: only their company (from token). Admin: filter by query company_id or return empty.
+    const search = (req.query.search as string || '').trim();
     const companyId = user?.company_id
       ? user.company_id
       : (req.query.company_id as string) || null;
@@ -469,6 +470,12 @@ export const getReceivables = async (req: CustomUserRequest, res: Response): Pro
         AND i.status != 'DRAFT'
         AND i.sale_id IS NOT NULL
         AND (i.total_amount - COALESCE(i.total_paid_amount, 0::money))::numeric > 0.01
+        ${search
+          ? Prisma.sql`AND (
+              i.invoice_number ILIKE ${'%' + search + '%'}
+              OR COALESCE(c.customer_name, '') ILIKE ${'%' + search + '%'}
+            )`
+          : Prisma.empty}
       ORDER BY i.created_at DESC NULLS LAST, i.id DESC
     `;
 

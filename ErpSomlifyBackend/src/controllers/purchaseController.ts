@@ -189,6 +189,7 @@ export const getAllPurchases = async (req: CustomUserRequest, res: Response): Pr
     const userCompanyId = (req.user as any)?.company_id;
 
     // Admin users see all purchases; regular users only their company's. Optional company_id filter for admin.
+    const search = (req.query.search as string || '').trim();
     const whereClause: any = {
       purchase_qty: { gt: 0 },
     };
@@ -203,6 +204,18 @@ export const getAllPurchases = async (req: CustomUserRequest, res: Response): Pr
         res.status(400).json({ message: 'Company ID is required' });
         return;
       }
+    }
+    if (search) {
+      whereClause.AND = [
+        {
+          OR: [
+            { container_number: { contains: search, mode: 'insensitive' } },
+            { products: { product_name: { contains: search, mode: 'insensitive' } } },
+            { products: { product_code: { contains: search, mode: 'insensitive' } } },
+            { vendors: { vendor_name: { contains: search, mode: 'insensitive' } } },
+          ],
+        },
+      ];
     }
 
     const [total, purchases] = await prisma.$transaction([

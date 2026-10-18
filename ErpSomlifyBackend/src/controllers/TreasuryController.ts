@@ -265,6 +265,7 @@ export const getTransfers = async (req: CustomUserRequest, res: Response): Promi
       return;
     }
     const type = req.query.type; // 'sent' or 'received'
+    const search = (req.query.search as string || '').trim();
 
     const whereClause: any = {};
     if (companyId) {
@@ -281,6 +282,19 @@ export const getTransfers = async (req: CustomUserRequest, res: Response): Promi
       }
     } else {
       // Main admin "all companies" - no company filter; show all transfers
+    }
+    if (search) {
+      const searchOr = [
+        { reference_id: { contains: search, mode: 'insensitive' } },
+        { sender: { company_name: { contains: search, mode: 'insensitive' } } },
+        { receiver_branch: { company_name: { contains: search, mode: 'insensitive' } } },
+      ];
+      if (whereClause.OR) {
+        whereClause.AND = [{ OR: whereClause.OR }, { OR: searchOr }];
+        delete whereClause.OR;
+      } else {
+        whereClause.OR = searchOr;
+      }
     }
 
     const transfers = await prisma.moneyTransfer.findMany({

@@ -86,8 +86,16 @@ export const getAllEmployees = async (req: CustomUserRequest, res: Response): Pr
       return;
     }
 
-    const where: { company_id?: string } = {};
+    const search = (req.query.search as string || '').trim();
+    const where: any = {};
     if (companyId) where.company_id = companyId;
+    if (search) {
+      where.OR = [
+        { employee_name: { contains: search, mode: 'insensitive' } },
+        { employee_phone: { contains: search, mode: 'insensitive' } },
+        { employee_address: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
     const employees = await prisma.employees.findMany({
       where,

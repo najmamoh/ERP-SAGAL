@@ -75,6 +75,14 @@ export const findPayable = async (req: CustomUserRequest, res: Response): Promis
     const userCompanyId = (req.user as any)?.company_id;
     const userRoles = (req.user as any)?.roles || [];
     const isMainAdmin = userRoles.includes('admin') || userRoles.includes('superAdmin') || userRoles.includes('super_admin');
+    const search = (req.query.search as string || '').trim();
+    const searchClause = search
+      ? Prisma.sql` AND (
+          COALESCE(vendors.vendor_name, '') ILIKE ${'%' + search + '%'}
+          OR COALESCE(products.product_name, '') ILIKE ${'%' + search + '%'}
+          OR COALESCE(products.product_code, '') ILIKE ${'%' + search + '%'}
+        )`
+      : Prisma.empty;
 
     // Company users see only their payables (incl. transfer purchases); admin sees all
     const raw = !isMainAdmin && userCompanyId
@@ -93,6 +101,7 @@ export const findPayable = async (req: CustomUserRequest, res: Response): Promis
           LEFT JOIN vendors ON product_purchases.vendor_id = vendors.vendor_id
           JOIN products ON product_purchases.product_id = products.product_id
           WHERE purchase_debt::numeric > 0 AND vendors.company_id = ${userCompanyId}
+          ${searchClause}
           ORDER BY product_purchases.created_at DESC`
       : await prisma.$queryRaw<any[]>`
           SELECT COALESCE(vendors.vendor_name, 'No vendor') AS vendor_name,
@@ -109,6 +118,7 @@ export const findPayable = async (req: CustomUserRequest, res: Response): Promis
           LEFT JOIN vendors ON product_purchases.vendor_id = vendors.vendor_id
           JOIN products ON product_purchases.product_id = products.product_id
           WHERE purchase_debt::numeric > 0
+          ${searchClause}
           ORDER BY product_purchases.created_at DESC`;
 
     // Map to plain values so frontend always gets strings/numbers (Decimal/Money can serialize oddly)

@@ -79,6 +79,7 @@
 
 
 import { Request, Response } from 'express';
+import { Prisma } from '@prisma/client';
 import { prisma } from '../prisma';
 import { CustomUserRequest } from '../middlewares';
 
@@ -92,11 +93,64 @@ function normStr(v: unknown): string {
   return String(v ?? '').trim();
 }
 
+const PRODUCT_SORT_FIELDS = [
+  'product_code',
+  'product_name',
+  'product_price',
+  'product_alert_number',
+  'created_at',
+] as const;
+
+type ProductSortField = (typeof PRODUCT_SORT_FIELDS)[number];
+
+function productOrderBy(sortBy: string, sortOrder: string) {
+  const field = PRODUCT_SORT_FIELDS.includes(sortBy as ProductSortField)
+    ? (sortBy as ProductSortField)
+    : null;
+  const direction: 'asc' | 'desc' = sortOrder === 'asc' ? 'asc' : 'desc';
+  if (!field) {
+    return [{ created_at: 'desc' as const }, { product_id: 'desc' as const }];
+  }
+  return [{ [field]: direction }, { product_id: 'desc' as const }];
+}
+
+function likePattern(search: string) {
+  return `%${search.replace(/[\\%_]/g, (ch) => `\\${ch}`)}%`;
+}
+
+/** Tracking numbers are text, so "10" would sort before "2". Compare the digits as a number. */
+async function productIdsByTrackingNumber(
+  search: string,
+  direction: 'asc' | 'desc',
+  skip: number,
+  take: number,
+) {
+  const sqlDir = Prisma.raw(direction === 'desc' ? 'DESC' : 'ASC');
+  const where = search
+    ? Prisma.sql`WHERE product_name ILIKE ${likePattern(search)} ESCAPE '\\' OR product_code ILIKE ${likePattern(search)} ESCAPE '\\'`
+    : Prisma.empty;
+
+  const rows = await prisma.$queryRaw<{ product_id: number }[]>`
+    SELECT product_id
+    FROM products
+    ${where}
+    ORDER BY
+      NULLIF(regexp_replace(product_code, '[^0-9]', '', 'g'), '')::numeric ${sqlDir} NULLS LAST,
+      product_code ${sqlDir},
+      product_id ${sqlDir}
+    LIMIT ${take}
+    OFFSET ${skip}
+  `;
+  return rows.map((row) => Number(row.product_id));
+}
+
 export const getAllProducts = async (req: CustomUserRequest, res: Response): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const pageSize = parseInt(req.query.pageSize as string) || 20;
     const search = req.query.search as string || '';
+    const sortBy = String(req.query.sortBy || '');
+    const sortOrder = String(req.query.sortOrder || '');
     const skip = (page - 1) * pageSize;
 
     const searchCondition = [
@@ -104,16 +158,26 @@ export const getAllProducts = async (req: CustomUserRequest, res: Response): Pro
       { product_code: { contains: search, mode: 'insensitive' as const } }
     ];
     const where = search ? { OR: searchCondition } : {};
+    const orderBy = productOrderBy(sortBy, sortOrder);
+    const direction: 'asc' | 'desc' = sortOrder === 'desc' ? 'desc' : 'asc';
 
-    const [total, products] = await prisma.$transaction([
-      prisma.products.count({ where }),
-      prisma.products.findMany({
+    const total = await prisma.products.count({ where });
+    let products;
+    if (sortBy === 'product_code') {
+      const ids = await productIdsByTrackingNumber(search, direction, skip, pageSize);
+      const rows = ids.length
+        ? await prisma.products.findMany({ where: { product_id: { in: ids } } })
+        : [];
+      const rank = new Map(ids.map((id, index) => [id, index]));
+      products = rows.sort((a, b) => (rank.get(a.product_id) ?? 0) - (rank.get(b.product_id) ?? 0));
+    } else {
+      products = await prisma.products.findMany({
         where,
-        orderBy: [{ created_at: 'desc' }, { product_id: 'desc' }],
+        orderBy,
         skip,
         take: pageSize,
-      })
-    ]);
+      });
+    }
 
     const hasMore = skip + pageSize < total;
 

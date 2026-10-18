@@ -264,9 +264,16 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
 export const getAllUsers = async (req: CustomUserRequest, res: Response): Promise<void> => {
   try {
     // If the user has a company_id, filter by it; otherwise (main user) return all
-    const companyFilter = req.user?.company_id
+    const search = (req.query.search as string || '').trim();
+    const companyFilter: any = req.user?.company_id
       ? { company_id: req.user.company_id }
       : {};
+    if (search) {
+      companyFilter.OR = [
+        { full_name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
     const users = await prisma.company_users.findMany({
       where: companyFilter,

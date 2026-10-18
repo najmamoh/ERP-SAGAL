@@ -25,6 +25,13 @@ export const getAllInvoices = async (req: CustomUserRequest, res: Response) => {
     
     if (req.query.status) where.status = req.query.status;
     if (req.query.customer_id) where.customer_id = parseInt(req.query.customer_id as string);
+    const search = (req.query.search as string || '').trim();
+    if (search) {
+      where.OR = [
+        { invoice_number: { contains: search, mode: 'insensitive' } },
+        { customer: { customer_name: { contains: search, mode: 'insensitive' } } },
+      ];
+    }
 
     const [total, invoices] = await prisma.$transaction([
       prisma.invoice.count({ where }), 

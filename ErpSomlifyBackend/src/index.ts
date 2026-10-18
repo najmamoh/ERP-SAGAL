@@ -39,6 +39,7 @@ import PermissionRoute from "./Routes/PermissionRoute";
 import WarehouseRoute from "./Routes/WarehouseRoute";
 import StoreRoute from "./Routes/StoreRoute";
 import BanksRoute from "./Routes/BanksRoute";
+import SearchRoute from "./Routes/SearchRoute";
 
 // Import controllers
 import "./controllers";
@@ -56,9 +57,9 @@ app.use(cookieParser());
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
-      // "https://gaanicompany.com",
-      "http://localhost:5173",
-      // "https://www.gaanicompany.com",
+      "https://newsagal.com",
+      "https://www.newsagal.com",
+      // "http://localhost:5173",
     ];
 
     // Allow Postman / server requests (no origin)
@@ -124,6 +125,7 @@ app.use("/api/service-sales", ServiceSaleRoute);
 app.use("/api/warehouse", WarehouseRoute);
 app.use("/api/stores", StoreRoute);
 app.use("/api/Banks", BanksRoute);
+app.use("/api/search", SearchRoute);
 
 // New RBAC routes
 app.use("/api/roles", RoleRoute);

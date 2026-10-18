@@ -648,9 +648,15 @@ export const addStoreStock = async (req: CustomUserRequest, res: Response): Prom
     const store_id = req.params.id;
     const productId = parseInt(String(req.body.product_id), 10);
     const qty = parseFloat(String(req.body.quantity ?? '').replace(',', '.'));
+    const hasPrice = req.body.price != null && req.body.price !== '';
+    const price = hasPrice ? parseFloat(String(req.body.price).replace(',', '.')) : null;
 
     if (!productId || !Number.isFinite(qty) || qty <= 0) {
       res.status(400).json({ message: 'Select a product and a quantity greater than 0' });
+      return;
+    }
+    if (hasPrice && (price == null || !Number.isFinite(price) || price <= 0)) {
+      res.status(400).json({ message: 'Enter a price greater than 0' });
       return;
     }
 
@@ -668,6 +674,13 @@ export const addStoreStock = async (req: CustomUserRequest, res: Response): Prom
     const unitCost = product.product_cost != null ? Number(product.product_cost) : 0;
 
     const stock = await prisma.$transaction(async (tx) => {
+      if (price != null) {
+        await tx.products.update({
+          where: { product_id: productId },
+          data: { product_price: price.toFixed(2), updated_at: new Date() },
+        });
+      }
+
       const existing = await tx.store_stock.findUnique({
         where: { store_id_product_id: { store_id, product_id: productId } },
       });
