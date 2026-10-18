@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridColDef, GridSortModel } from '@mui/x-data-grid';
 import { useSelector, useDispatch } from 'react-redux';
 import { AppDispatch, RootState } from '@/Redux/Store';
 import toast from 'react-hot-toast';
@@ -18,19 +18,21 @@ import {
 import { ProductForm } from '@/components/ui/ProductForm';
 import { motion } from 'framer-motion';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
 
 const getColumns = (
   onRefresh: () => void,
   canUpdate: boolean,
   canDelete: boolean
 ): GridColDef[] => [
-  { field: 'product_code', headerName: 'Tracking no', width: 200 },
-  { field: 'product_name', headerName: 'Product Name', width: 300 },
-  { field: 'product_price', headerName: 'Price', width: 120, renderCell: (params) => `$${parseFloat(String(params?.value ?? 0)).toFixed(2)}` },
+  { field: 'product_code', headerName: 'Tracking no', width: 200, sortingOrder: ['asc', 'desc'] },
+  { field: 'product_name', headerName: 'Product Name', width: 300, sortingOrder: ['asc', 'desc'] },
+  { field: 'product_price', headerName: 'Price', width: 120, sortingOrder: ['asc', 'desc'], renderCell: (params) => `$${parseFloat(String(params?.value ?? 0)).toFixed(2)}` },
   {
     field: 'product_alert_number',
     headerName: 'Alert no',
     width: 150,
+    sortingOrder: ['asc', 'desc'],
     renderCell: (params) => (
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         {params.value}
@@ -41,6 +43,7 @@ const getColumns = (
     field: 'action',
     headerName: 'Action',
     width: 200,
+    sortable: false,
     renderCell: (params) => (
       <ActionCell
         {...params}
@@ -217,6 +220,11 @@ export const ActionCell = (params: any & { canUpdate?: boolean; canDelete?: bool
 };
 
 export default function ProductListdata() {
+  const [searchInput, setSearchInput] = React.useState('');
+  const search = useDebouncedValue(searchInput);
+  const [sortModel, setSortModel] = React.useState<GridSortModel>([
+    { field: 'product_code', sort: 'asc' },
+  ]);
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: 20,
@@ -226,12 +234,17 @@ export default function ProductListdata() {
   const DelProductsState = useSelector((state: RootState) => state.DelProducs);
   const { canUpdate, canDelete } = useCompanyPermissions();
 
+  const activeSort = sortModel[0];
   const refreshTable = React.useCallback(() => {
     dispatch(getAllProductsFn({
       page: paginationModel.page + 1,
       pageSize: paginationModel.pageSize,
+      search,
+      ...(activeSort?.sort
+        ? { sortBy: activeSort.field, sortOrder: activeSort.sort }
+        : {}),
     }));
-  }, [dispatch, paginationModel.page, paginationModel.pageSize]);
+  }, [dispatch, paginationModel.page, paginationModel.pageSize, search, activeSort?.field, activeSort?.sort]);
 
   React.useEffect(() => {
     refreshTable();
@@ -279,6 +292,7 @@ export default function ProductListdata() {
       }}
     >
       <Box className="flex-1 w-full">
+        <TableSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPaginationModel((p) => ({ ...p, page: 0 })); }} placeholder="Search products..." />
         <DataGrid
           rows={AllProductState.data.map((product) => ({ id: product.product_id, ...product }))}
           columns={columns}
@@ -287,6 +301,12 @@ export default function ProductListdata() {
           pageSizeOptions={[20, 30, 50]}
           rowCount={AllProductState.total}
           paginationMode="server"
+          sortingMode="server"
+          sortModel={sortModel}
+          onSortModelChange={(model) => {
+            setSortModel(model);
+            setPaginationModel((p) => ({ ...p, page: 0 }));
+          }}
           sx={{
             paddingRight: '10px',
             paddingLeft: '10px',

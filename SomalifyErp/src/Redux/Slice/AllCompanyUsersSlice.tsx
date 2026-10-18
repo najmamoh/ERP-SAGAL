@@ -30,9 +30,10 @@ const initialState: AllCompanyUsersState = {
 
 export const getAllCompanyUsersFn = createAsyncThunk(
   "allCompanyUsers/getAll",
-  async (_, { rejectWithValue }) => {
+  async (search: string | undefined, { rejectWithValue }) => {
     try {
       const res = await axios.get(`${Url}/auth/All`, {
+        params: search?.trim() ? { search: search.trim() } : {},
         withCredentials: true,
       });
       return res.data;

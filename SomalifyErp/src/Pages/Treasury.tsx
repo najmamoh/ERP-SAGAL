@@ -10,7 +10,7 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { Link } from "react-router-dom";
 import { AppDispatch, RootState } from "@/Redux/Store";
-import { getTreasuryBalanceFn, getAllTreasuriesFn } from "@/Redux/Slice/TreasurySlice";
+import { getTreasuryBalanceFn } from "@/Redux/Slice/TreasurySlice";
 import type { TransferFilterType } from "@/Pages/TreasuryTable";
 
 function Treasury() {
@@ -22,11 +22,12 @@ function Treasury() {
     (roles.includes("admin") || roles.includes("superAdmin") || roles.includes("super_admin"));
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null);
   const [transferFilter, setTransferFilter] = useState<TransferFilterType>("all");
+  const [tableKey, setTableKey] = useState(0);
 
   const refreshData = useCallback(() => {
     dispatch(getTreasuryBalanceFn());
-    dispatch(getAllTreasuriesFn(transferFilter === "all" ? undefined : { type: transferFilter }));
-  }, [dispatch, transferFilter]);
+    setTableKey((k) => k + 1);
+  }, [dispatch]);
 
   useEffect(() => {
     refreshData();
@@ -128,7 +129,7 @@ function Treasury() {
             </h2>
           </div>
           <div className="p-5 sm:p-6">
-            <TreasuryTable transferFilter={transferFilter} />
+            <TreasuryTable key={tableKey} transferFilter={transferFilter} />
           </div>
         </div>
       </div>

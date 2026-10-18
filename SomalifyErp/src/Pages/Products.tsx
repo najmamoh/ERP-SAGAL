@@ -6,7 +6,7 @@ import { FiBox, FiCalendar } from 'react-icons/fi';
 import { MdSell, MdTableBar } from 'react-icons/md';
 import { BsGraphUpArrow } from 'react-icons/bs';
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCompanyPermissions } from '@/hooks/useCompanyPermissions';
 import {
   Dialog,
@@ -16,31 +16,46 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { ProductForm } from '@/components/ui/ProductForm';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/Redux/Store';
-import { getAllProductsFn } from '@/Redux/Slice/getAllProductsSlice';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
+
+function isThisMonth(dateStr?: string) {
+  if (!dateStr) return false;
+  const createdDate = new Date(dateStr);
+  const now = new Date();
+  return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+}
 
 function Products() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
-  const productState = useSelector((state: RootState) => state.AllProduct);
+  const [tableKey, setTableKey] = useState(0);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [activeProducts, setActiveProducts] = useState(0);
+  const [thisMonthProducts, setThisMonthProducts] = useState(0);
   const { canCreate } = useCompanyPermissions();
 
-  useEffect(() => {
-    dispatch(getAllProductsFn({ page: 1, pageSize: 1000 }));
-  }, [dispatch]);
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const res = await axios.get(`${Url}/products`, {
+        params: { page: 1, pageSize: 1000 },
+        withCredentials: true,
+      });
+      const data = Array.isArray(res.data?.data) ? res.data.data : [];
+      setTotalProducts(res.data?.total ?? data.length);
+      setActiveProducts(data.length);
+      setThisMonthProducts(data.filter((p: { created_at?: string }) => isThisMonth(p.created_at)).length);
+    } catch {
+      /* keep last stats */
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
 
-  // Calculate statistics
-  const totalProducts = productState.total || 0;
-  const activeProducts = productState.data?.length || 0;
-  
-  // Calculate products created this month
-  const thisMonthProducts = productState.data?.filter((product) => {
-    const createdDate = new Date(product.created_at);
-    const now = new Date();
-    return createdDate.getMonth() === now.getMonth() && 
-           createdDate.getFullYear() === now.getFullYear();
-  }).length || 0;
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
   return (
     <div className='w-full min-h-screen px-4 md:px-6 lg:px-8 py-6 bg-gradient-to-br from-slate-50 via-blue-50/40 to-blue-50/30 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800'>
       {/* Header Section */}
@@ -135,7 +150,7 @@ function Products() {
                   Total Products
                 </p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {productState.isLoading ? (
+                  {statsLoading ? (
                     <span className="text-sm">Loading...</span>
                   ) : (
                     totalProducts.toLocaleString()
@@ -163,7 +178,7 @@ function Products() {
                   Active
                 </p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {productState.isLoading ? (
+                  {statsLoading ? (
                     <span className="text-sm">Loading...</span>
                   ) : (
                     activeProducts.toLocaleString()
@@ -191,7 +206,7 @@ function Products() {
                   This Month
                 </p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {productState.isLoading ? (
+                  {statsLoading ? (
                     <span className="text-sm">Loading...</span>
                   ) : (
                     thisMonthProducts.toLocaleString()
@@ -226,7 +241,7 @@ function Products() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">All your products in one place</p>
         </div>
         <div className="overflow-x-auto">
-          <ProductListdata />
+          <ProductListdata key={tableKey} />
         </div>
       </motion.div>
 
@@ -260,7 +275,8 @@ function Products() {
               mode="create" 
               onSuccess={() => {
                 setIsCreateOpen(false);
-                dispatch(getAllProductsFn({ page: 1, pageSize: 1000 }));
+                loadStats();
+                setTableKey((k) => k + 1);
               }}
             />
           </div>

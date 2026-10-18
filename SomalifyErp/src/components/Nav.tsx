@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { AppDispatch, RootState } from '@/Redux/Store';
 import { BiSolidDoorOpen } from 'react-icons/bi';
 import { performLogout } from '@/lib/authLogout';
@@ -10,11 +11,23 @@ import { FiSearch, FiUser } from 'react-icons/fi';
 import { IoMdNotificationsOutline } from 'react-icons/io';
 import { BsThreeDotsVertical } from 'react-icons/bs';
 import { useDispatch } from 'react-redux';
+import { Url } from '@/Interfaces';
+
+type SearchHit = {
+  table: string;
+  id: string;
+  title: string;
+  subtitle?: string;
+  href: string;
+};
 
 function Nav() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchHits, setSearchHits] = useState<SearchHit[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
@@ -50,6 +63,31 @@ function Nav() {
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
 
+  useEffect(() => {
+    const q = searchQuery.trim();
+    if (q.length < 1) {
+      setSearchHits([]);
+      setSearchLoading(false);
+      return;
+    }
+    setSearchLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await axios.get(`${Url}/search`, {
+          params: { q },
+          withCredentials: true,
+        });
+        setSearchHits(Array.isArray(res.data?.results) ? res.data.results : []);
+        setSearchOpen(true);
+      } catch {
+        setSearchHits([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
+
   return (
     <div className="w-full min-w-0 max-w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="flex items-center justify-between px-4 md:px-6 lg:px-8 py-2 w-full min-w-0 max-w-full">
@@ -61,9 +99,41 @@ function Nav() {
               type="text"
               placeholder="Search anything..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setSearchOpen(true); }}
+              onFocus={() => searchHits.length > 0 && setSearchOpen(true)}
               className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all"
             />
+            {searchOpen && searchQuery.trim().length > 0 && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setSearchOpen(false)} />
+                <div className="absolute left-0 right-0 top-full mt-1 max-h-96 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl z-50">
+                  {searchLoading ? (
+                    <p className="px-3 py-3 text-sm text-gray-500">Searching…</p>
+                  ) : searchHits.length === 0 ? (
+                    <p className="px-3 py-3 text-sm text-gray-500">No results</p>
+                  ) : (
+                    searchHits.map((hit) => (
+                      <button
+                        key={`${hit.table}-${hit.id}`}
+                        type="button"
+                        onClick={() => {
+                          setSearchOpen(false);
+                          setSearchQuery('');
+                          navigate(`${isAdminDashboard ? '/AdminDashboard' : '/Dashboard'}/${hit.href}`);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0"
+                      >
+                        <p className="text-[10px] uppercase tracking-wide text-indigo-500">{hit.table}</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{hit.title}</p>
+                        {hit.subtitle ? (
+                          <p className="text-xs text-gray-500 truncate">{hit.subtitle}</p>
+                        ) : null}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

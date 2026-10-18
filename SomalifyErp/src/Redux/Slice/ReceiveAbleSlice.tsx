@@ -39,7 +39,7 @@ const initialState ={
 };
 export const getAllReceiveAbleFn= createAsyncThunk(
     'getAllPayable',
-    async (params: { page: number; pageSize: number; company_id?: string }, { rejectWithValue }) => {
+    async (params: { page: number; pageSize: number; company_id?: string; search?: string }, { rejectWithValue }) => {
         try {
             const raw = localStorage.getItem("userInfo") ?? getCookie("userInfo");
             const userInfo = raw ? JSON.parse(raw) : {};
@@ -58,6 +58,9 @@ export const getAllReceiveAbleFn= createAsyncThunk(
             // Company dashboard: backend uses company_id from token. Admin: pass selected company_id so backend filters.
             if (company_Id) {
                 requestParams.company_id = company_Id;
+            }
+            if (params.search && params.search.trim()) {
+                requestParams.search = params.search.trim();
             }
 
             const res = await axios.get(`${Url}/receivables/products`, {

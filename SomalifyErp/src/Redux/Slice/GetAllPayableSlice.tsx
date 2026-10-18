@@ -33,9 +33,11 @@ const initialState ={
 };
 export const getAllPayableFn = createAsyncThunk(
     'getAllPayable',
-    async (_companyId: string | undefined, { rejectWithValue }) => {
+    async (arg: string | { search?: string } | undefined, { rejectWithValue }) => {
         try {
+            const search = typeof arg === 'object' && arg ? arg.search : undefined;
             const res = await axios.get(`${Url}/payables/products`, {
+                params: search?.trim() ? { search: search.trim() } : {},
                 withCredentials: true,
             });
 

@@ -12,6 +12,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import TableSearch, { useDebouncedValue } from "@/components/ui/TableSearch";
 
 /* ================= Columns ================= */
 const columns: GridColDef[] = [
@@ -84,6 +85,8 @@ interface ExpensesDataProps {
 
 /* ================= Main Component ================= */
 function ExpensesData({ selectedCompanyId, startDate = '', endDate = '' }: ExpensesDataProps) {
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebouncedValue(searchInput);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 20,
@@ -107,9 +110,10 @@ function ExpensesData({ selectedCompanyId, startDate = '', endDate = '' }: Expen
         company_id: selectedCompanyId || undefined,
         startDate: startDate || undefined,
         endDate: endDate || undefined,
+        search,
       })
     );
-  }, [dispatch, paginationModel, selectedCompanyId, startDate, endDate]);
+  }, [dispatch, paginationModel, selectedCompanyId, startDate, endDate, search]);
 
   useEffect(() => {
     if (AllExpensesState.isLoading) toast.loading("Loading...", { id: "load" });
@@ -140,6 +144,7 @@ function ExpensesData({ selectedCompanyId, startDate = '', endDate = '' }: Expen
 
   return (
     <Box className="w-full">
+      <TableSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPaginationModel((p) => ({ ...p, page: 0 })); }} placeholder="Search expenses..." />
       <DataGrid
         rows={rows}
         columns={columns}

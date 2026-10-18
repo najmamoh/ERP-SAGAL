@@ -1,10 +1,11 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppDispatch, RootState } from '@/Redux/Store';
-import { resetAllPayable } from '@/Redux/Slice/GetAllPayableSlice';
+import { getAllPayableFn, resetAllPayable } from '@/Redux/Slice/GetAllPayableSlice';
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
 import './PayablesTable.css';
 import toast from 'react-hot-toast';
 
@@ -25,6 +26,12 @@ function formatNumber(value: string | number | null | undefined): string {
 export default function PayablesTable() {
   const dispatch = useDispatch<AppDispatch>();
   const GetAllPayable = useSelector((state: RootState) => state.AllPayable);
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput);
+
+  useEffect(() => {
+    dispatch(getAllPayableFn({ search }));
+  }, [dispatch, search]);
   const location = useLocation();
   const basePath = location.pathname.includes('/AdminDashboard/') ? 'AdminDashboard' : 'Dashboard';
 
@@ -97,6 +104,7 @@ export default function PayablesTable() {
       }}
     >
       <Box sx={{ flex: 1, width: '100%', minWidth: 0, overflow: 'hidden' }}>
+        <TableSearch value={searchInput} onChange={setSearchInput} placeholder="Search payables..." />
         <DataGrid
           rows={rows}
           columns={columns}

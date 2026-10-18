@@ -26,9 +26,10 @@ const initialState ={
 };
 export const GetAllUserCompnyFN= createAsyncThunk(
     'AllUsers',
-    async(_,{rejectWithValue})=>{
+    async(search: string | undefined,{rejectWithValue})=>{
         try {
             const res= await axios.get(`${Url}/auth/All`,{
+                params: search?.trim() ? { search: search.trim() } : {},
                 withCredentials: true,
               })
 

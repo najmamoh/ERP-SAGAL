@@ -11,6 +11,9 @@ import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getAllInvoiceFn, resetAllInvoice } from '@/Redux/Slice/InvoicesSlice';
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
 
 
 
@@ -227,19 +230,35 @@ export const ActionCell = (params: { row: { id: string; sale_id?: number }; [key
 };
 
 export default function InvoiceData() {
+  const [searchInput, setSearchInput] = React.useState('');
+  const search = useDebouncedValue(searchInput);
   const [paginationModel, setPaginationModel] = React.useState({ page: 0, pageSize: 20 });
+  const [overall, setOverall] = React.useState({ totalAmount: 0, count: 0 });
   const dispatch = useDispatch<AppDispatch>();
   const AllInvoiceState = useSelector((state: RootState) => state.AllInvoice);
   const data = AllInvoiceState.data ?? [];
+
+  React.useEffect(() => {
+    axios.get(`${Url}/invoice`, { params: { page: 1, pageSize: 1000 }, withCredentials: true })
+      .then((res) => {
+        const list = Array.isArray(res.data?.data) ? res.data.data : [];
+        setOverall({
+          totalAmount: list.reduce((sum: number, inv: { total_amount?: string | number }) => sum + parseFloat(String(inv.total_amount || 0)), 0),
+          count: res.data?.total ?? list.length,
+        });
+      })
+      .catch(() => {});
+  }, []);
 
   React.useEffect(() => {
     dispatch(
       getAllInvoiceFn({
         page: paginationModel.page + 1,
         pageSize: paginationModel.pageSize,
+        search,
       })
     );
-  }, [dispatch, paginationModel]);
+  }, [dispatch, paginationModel, search]);
 
   React.useEffect(() => {
     if (AllInvoiceState.isError) {
@@ -248,11 +267,6 @@ export default function InvoiceData() {
     dispatch(resetAllInvoice());
   }, [AllInvoiceState.isError, dispatch]);
 
-  const total = useMemo(
-    () => data.reduce((sum, inv) => sum + parseFloat(String(inv.total_amount || 0)), 0),
-    [data]
-  );
-
   const rows = useMemo(
     () => data.map((inv) => ({ ...inv, id: inv.id })),
     [data]
@@ -260,13 +274,14 @@ export default function InvoiceData() {
 
   return (
     <Box sx={{ width: '100%' }}>
+      <TableSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPaginationModel((p) => ({ ...p, page: 0 })); }} placeholder="Search invoices..." />
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <div className="inline-flex items-center gap-4 rounded-2xl bg-blue-100 border border-indigo-500/20 px-5 py-3.5 shadow-sm">
           <span className="text-sm font-medium text-slate-600">Total Invoiced</span>
-          <span className="text-xl font-bold tabular-nums tracking-tight text-slate-800">${total.toFixed(2)}</span>
+          <span className="text-xl font-bold tabular-nums tracking-tight text-slate-800">${overall.totalAmount.toFixed(2)}</span>
         </div>
         <div className="text-sm text-slate-500">
-          <span className="font-medium text-slate-700">{AllInvoiceState.total ?? 0}</span> invoice{AllInvoiceState.total !== 1 ? 's' : ''} in list
+          <span className="font-medium text-slate-700">{overall.count}</span> invoice{overall.count !== 1 ? 's' : ''} in list
         </div>
       </div>
       <DataGrid

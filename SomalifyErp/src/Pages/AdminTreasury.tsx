@@ -8,7 +8,7 @@ import { HiOutlineBanknotes } from "react-icons/hi2";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import { AppDispatch, RootState } from "@/Redux/Store";
-import { getAllTreasuriesFn, getAllCompanyBalancesFn } from "@/Redux/Slice/TreasurySlice";
+import { getAllCompanyBalancesFn } from "@/Redux/Slice/TreasurySlice";
 import { CompanyFilter } from "@/components/ui/CompanyFilter";
 import type { TransferFilterType } from "@/Pages/TreasuryTable";
 
@@ -24,16 +24,14 @@ function AdminTreasury() {
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null);
   const [transferFilter, setTransferFilter] = useState<TransferFilterType>("all");
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>("");
+  const [tableKey, setTableKey] = useState(0);
 
   const refreshData = useCallback(() => {
-    const params: { type?: "sent" | "received"; company_id?: string } = {};
-    if (transferFilter !== "all") params.type = transferFilter as "sent" | "received";
-    if (selectedCompanyId) params.company_id = selectedCompanyId;
-    dispatch(getAllTreasuriesFn(Object.keys(params).length ? params : undefined));
     dispatch(
       getAllCompanyBalancesFn(selectedCompanyId ? { company_id: selectedCompanyId } : undefined)
     );
-  }, [dispatch, transferFilter, selectedCompanyId]);
+    setTableKey((k) => k + 1);
+  }, [dispatch, selectedCompanyId]);
 
   useEffect(() => {
     refreshData();
@@ -128,6 +126,7 @@ function AdminTreasury() {
           </div>
           <div className="p-5 sm:p-6">
             <TreasuryTable
+              key={tableKey}
               transferFilter={transferFilter}
               selectedCompanyId={selectedCompanyId || undefined}
             />

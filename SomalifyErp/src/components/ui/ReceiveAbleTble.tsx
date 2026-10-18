@@ -7,6 +7,10 @@ import { AppDispatch, RootState } from '@/Redux/Store';
 import { getAllReceiveAbleFn, resetAllRecieve } from '@/Redux/Slice/ReceiveAbleSlice';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
+import { getCookie } from '@/lib/cookies';
 
 const columns: GridColDef[] = [
   {
@@ -117,12 +121,34 @@ export default function RecieveTable({ selectedCompanyId }: RecieveTableProps) {
   const rawData = ReceiveAbleState.data;
   const data = Array.isArray(rawData) ? rawData : (rawData as { data?: typeof rawData })?.data ?? [];
 
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput);
+  const [overallDue, setOverallDue] = useState(0);
+  const [overallCount, setOverallCount] = useState(0);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 20,
   });
 
   const isAdminDashboard = typeof window !== 'undefined' && window.location.pathname.startsWith('/AdminDashboard');
+
+  useEffect(() => {
+    if (isAdminDashboard && !selectedCompanyId) return;
+    const raw = localStorage.getItem('userInfo') ?? getCookie('userInfo');
+    const userInfo = raw ? JSON.parse(raw) : {};
+    const token = userInfo.accessToken;
+    const company_Id = selectedCompanyId || userInfo.user?.company_id || userInfo.company_id;
+    axios.get(`${Url}/receivables/products`, {
+      params: { page: 1, pageSize: 1000, ...(company_Id && { company_id: company_Id }) },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      withCredentials: true,
+    }).then((res) => {
+      const list = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : [];
+      const summary = res.data?.summary;
+      setOverallDue(summary != null ? summary.totalDebt : list.reduce((acc: number, item: any) => acc + parseFloat(item.credit || '0'), 0));
+      setOverallCount(res.data?.total ?? list.length);
+    }).catch(() => {});
+  }, [isAdminDashboard, selectedCompanyId]);
 
   useEffect(() => {
     // Admin must select a company to see receivables; company dashboard uses token
@@ -134,9 +160,10 @@ export default function RecieveTable({ selectedCompanyId }: RecieveTableProps) {
         page: paginationModel.page + 1,
         pageSize: paginationModel.pageSize,
         ...(selectedCompanyId ? { company_id: selectedCompanyId } : {}),
+        search,
       })
     );
-  }, [dispatch, paginationModel, isAdminDashboard, selectedCompanyId]);
+  }, [dispatch, paginationModel, isAdminDashboard, selectedCompanyId, search]);
 
   useEffect(() => {
     const toastId = 'toastw';
@@ -156,23 +183,19 @@ export default function RecieveTable({ selectedCompanyId }: RecieveTableProps) {
     [data]
   );
 
-  const totalCredit = useMemo(
-    () => data.reduce((acc, item) => acc + parseFloat(item.credit || '0'), 0),
-    [data]
-  );
-
   return (
     <Box sx={{ width: '100%' }}>
+      <TableSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPaginationModel((p) => ({ ...p, page: 0 })); }} placeholder="Search receivables..." />
       <div className="mb-4 flex flex-wrap items-center gap-4">
         <div className="inline-flex items-center gap-4 rounded-2xl bg-blue-100 border border-indigo-500/20 px-5 py-3 shadow-sm">
           <span className="text-sm font-medium text-slate-600">Total Due (Receivable)</span>
           <span className="text-xl font-bold tabular-nums tracking-tight text-slate-800">
-            ${totalCredit.toFixed(2)}
+            ${overallDue.toFixed(2)}
           </span>
         </div>
         <span className="text-sm text-slate-500">
-          <span className="font-medium text-slate-700">{ReceiveAbleState.total ?? data.length}</span> item
-          {(ReceiveAbleState.total ?? data.length) !== 1 ? 's' : ''} in list
+          <span className="font-medium text-slate-700">{overallCount}</span> item
+          {overallCount !== 1 ? 's' : ''} in list
         </span>
       </div>
       <DataGrid

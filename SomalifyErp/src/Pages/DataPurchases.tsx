@@ -17,6 +17,7 @@ import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
 import { getAllPurchasesSortFn, resetAllPurchaseSort } from '@/Redux/Slice/AllPurchaseSortSlice';
 import { delPurchaseFn, resetDelPurchase } from '@/Redux/Slice/DeletePurchase';
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
 
 const columns: GridColDef[] = [
   { field: 'purchase_id', headerName: 'Id', width: 80, flex: 0 },
@@ -157,6 +158,8 @@ export const ActionCell = (params:any) => {
 };
 
 export default function DataPurchases() {
+   const [searchInput, setSearchInput] = React.useState('');
+   const search = useDebouncedValue(searchInput);
    const [paginationModel, setPaginationModel] = React.useState({
         page: 0, // MUI uses 0-based index
         pageSize: 20,
@@ -181,9 +184,10 @@ export default function DataPurchases() {
   React.useEffect(() => {
         dispatch(getAllPurchasesSortFn({ 
           page: paginationModel.page + 1, // Convert to 1-based for backend
-          pageSize: paginationModel.pageSize 
+          pageSize: paginationModel.pageSize,
+          search,
         }));
-      }, [dispatch, paginationModel]);
+      }, [dispatch, paginationModel, search]);
 
       React.useEffect(() => {
          if(AllPurchaseState.isError) {
@@ -228,6 +232,7 @@ export default function DataPurchases() {
       }}
     >
       <Box sx={{ flex: 1, width: '100%', minWidth: 0, overflow: 'hidden' }}>
+        <TableSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPaginationModel((p) => ({ ...p, page: 0 })); }} placeholder="Search purchases..." />
         <DataGrid
           rows={purchaseData?.map((purchase) => ({ id: purchase.purchase_id, ...purchase }))}
           columns={columns}

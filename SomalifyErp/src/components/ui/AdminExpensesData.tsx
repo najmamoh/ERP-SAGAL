@@ -16,6 +16,7 @@ import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import TableSearch, { useDebouncedValue } from "@/components/ui/TableSearch";
 
 const basePath = "/AdminDashboard";
 
@@ -96,6 +97,8 @@ export default function AdminExpensesData({
   startDate,
   endDate,
 }: AdminExpensesDataProps) {
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebouncedValue(searchInput);
   const [paginationModel, setPaginationModel] = useState({
     page: 0,
     pageSize: 20,
@@ -119,6 +122,7 @@ export default function AdminExpensesData({
         ...(selectedCompanyId && { company_id: selectedCompanyId }),
         ...(startDate && { startDate }),
         ...(endDate && { endDate }),
+        search,
       })
     );
   }, [
@@ -128,6 +132,7 @@ export default function AdminExpensesData({
     selectedCompanyId,
     startDate,
     endDate,
+    search,
   ]);
 
   useEffect(() => {
@@ -160,6 +165,7 @@ export default function AdminExpensesData({
 
   return (
     <Box className="w-full">
+      <TableSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPaginationModel((p) => ({ ...p, page: 0 })); }} placeholder="Search expenses..." />
       <DataGrid
         rows={rows}
         columns={columns}

@@ -4,36 +4,57 @@ import { HiOutlineInbox } from 'react-icons/hi2';
 import { RiStockFill } from 'react-icons/ri';
 import { Link } from 'react-router-dom';
 import DataPurchases from './DataPurchases';
-import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { AppDispatch, RootState } from '@/Redux/Store';
+import { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import CreatePurchase from './CreatePurchase';
-import { getAllPurchasesSortFn } from '@/Redux/Slice/AllPurchaseSortSlice';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
 
 function AllPurchases() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
-  const sortState = useSelector((state: RootState) => state.GetSortPurchase);
-  const purchaseData = Array.isArray(sortState?.data) ? sortState.data : [];
+  const [tableKey, setTableKey] = useState(0);
+  const [totals, setTotals] = useState({
+    totalCost: 0,
+    totalPaid: 0,
+    totalDebt: 0,
+    totalDiscount: 0,
+    count: 0,
+  });
 
-  const totals = purchaseData.reduce(
-    (acc, p) => {
-      const qty = Number(p.purchase_qty) || 0;
-      const cost = Number(p.item_cost) || 0;
-      const paid = Number(p.paid_amount) || 0;
-      const debt = Number(p.purchase_debt) || 0;
-      const discount = Number(p.purchase_discount) || 0;
-      return {
-        totalCost: acc.totalCost + qty * cost,
-        totalPaid: acc.totalPaid + paid,
-        totalDebt: acc.totalDebt + debt,
-        totalDiscount: acc.totalDiscount + discount,
-        count: acc.count + 1,
-      };
-    },
-    { totalCost: 0, totalPaid: 0, totalDebt: 0, totalDiscount: 0, count: 0 }
-  );
+  const loadStats = useCallback(async () => {
+    try {
+      const res = await axios.get(`${Url}/purchases`, {
+        params: { page: 1, pageSize: 1000 },
+        withCredentials: true,
+      });
+      const purchaseData = Array.isArray(res.data?.data) ? res.data.data : [];
+      setTotals(
+        purchaseData.reduce(
+          (acc: typeof totals, p: any) => {
+            const qty = Number(p.purchase_qty) || 0;
+            const cost = Number(p.item_cost) || 0;
+            const paid = Number(p.paid_amount) || 0;
+            const debt = Number(p.purchase_debt) || 0;
+            const discount = Number(p.purchase_discount) || 0;
+            return {
+              totalCost: acc.totalCost + qty * cost,
+              totalPaid: acc.totalPaid + paid,
+              totalDebt: acc.totalDebt + debt,
+              totalDiscount: acc.totalDiscount + discount,
+              count: acc.count + 1,
+            };
+          },
+          { totalCost: 0, totalPaid: 0, totalDebt: 0, totalDiscount: 0, count: 0 }
+        )
+      );
+    } catch {
+      /* keep last stats */
+    }
+  }, []);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   return (
     <div className='w-full min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50/30 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800'>
@@ -115,7 +136,7 @@ function AllPurchases() {
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border border-gray-100 dark:border-gray-700">
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Cost</p>
           <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">${totals.totalCost.toFixed(2)}</p>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{totals.count} items on page</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{totals.count} items</p>
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md border border-gray-100 dark:border-gray-700">
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Paid</p>
@@ -153,7 +174,7 @@ function AllPurchases() {
         </div>
         <div className="w-full overflow-x-auto">
           <div className="min-w-0 w-full" style={{ maxWidth: '100%' }}>
-            <DataPurchases />
+            <DataPurchases key={tableKey} />
           </div>
         </div>
       </motion.div>
@@ -173,10 +194,8 @@ function AllPurchases() {
             <CreatePurchase
               onSuccess={() => {
                 setIsCreateOpen(false);
-                dispatch(getAllPurchasesSortFn({
-                  page: sortState?.page ?? 1,
-                  pageSize: sortState?.pageSize ?? 20,
-                }));
+                loadStats();
+                setTableKey((k) => k + 1);
               }}
             />
           </div>

@@ -54,7 +54,7 @@ const initialState: AllExpensesState ={
 };
 export const getAllExpensesOnlyFn= createAsyncThunk<
 OtherExpensesResponse,                 // ← the full response shape
-{ page: number; pageSize: number; company_id?: string; startDate?: string; endDate?: string },   // ← thunk args
+{ page: number; pageSize: number; company_id?: string; startDate?: string; endDate?: string; search?: string },   // ← thunk args
 { rejectValue: string }
 >(
     'getAllsalaries',
@@ -82,7 +82,8 @@ OtherExpensesResponse,                 // ← the full response shape
                     pageSize: params.pageSize,
                     ...(companyId && { company_id: companyId }),
                     ...(params.startDate && { startDate: params.startDate }),
-                    ...(params.endDate && { endDate: params.endDate })
+                    ...(params.endDate && { endDate: params.endDate }),
+                    ...(params.search && params.search.trim() && { search: params.search.trim() })
                   },withCredentials: true,
               })
 

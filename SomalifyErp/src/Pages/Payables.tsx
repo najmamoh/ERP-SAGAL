@@ -1,42 +1,48 @@
 import Payabletable from '@/components/ui/PayAbletaple'
-import { useEffect, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { RiSecurePaymentLine, RiMoneyDollarCircleLine, RiFileList3Line } from 'react-icons/ri';
 import { HiArrowTrendingDown, HiOutlineCurrencyDollar } from 'react-icons/hi2';
-import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch, RootState } from '@/Redux/Store';
-import { getAllPayableFn } from '@/Redux/Slice/GetAllPayableSlice';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
 
 function Payables() {
   const navigate = useNavigate();
-  const dispatch = useDispatch<AppDispatch>();
-  const GetAllPayable = useSelector((state: RootState) => state.AllPayable);
+  const [stats, setStats] = useState({
+    totalDebt: 0,
+    totalCost: 0,
+    totalPaid: 0,
+    totalItems: 0,
+    paymentProgress: 0,
+  });
+
+  const loadStats = useCallback(async () => {
+    try {
+      const res = await axios.get(`${Url}/payables/products`, { withCredentials: true });
+      const data = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+      const totalDebt = data.reduce((acc: number, item: any) => acc + parseFloat(String(item.debt ?? '0')), 0);
+      const totalCost = data.reduce((acc: number, item: any) => acc + parseFloat(String(item.total_cost ?? '0')), 0);
+      const totalPaid = data.reduce((acc: number, item: any) => acc + parseFloat(String(item.paid_amount ?? '0')), 0);
+      setStats({
+        totalDebt,
+        totalCost,
+        totalPaid,
+        totalItems: data.length,
+        paymentProgress: totalCost > 0 ? (totalPaid / totalCost) * 100 : 0,
+      });
+    } catch {
+      /* keep last stats */
+    }
+  }, []);
 
   useEffect(() => {
     if (!localStorage.getItem('userInfo')) {
       navigate('/');
     } else {
-      dispatch(getAllPayableFn());
+      loadStats();
     }
-  }, [navigate, dispatch]);
-
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const data = Array.isArray(GetAllPayable.data) ? GetAllPayable.data : [];
-    const totalDebt = data.reduce((acc, item) => acc + parseFloat(String(item.debt ?? '0')), 0);
-    const totalCost = data.reduce((acc, item) => acc + parseFloat(String(item.total_cost ?? '0')), 0);
-    const totalPaid = data.reduce((acc, item) => acc + parseFloat(String(item.paid_amount ?? '0')), 0);
-    const totalItems = data.length;
-
-    return {
-      totalDebt,
-      totalCost,
-      totalPaid,
-      totalItems,
-      paymentProgress: totalCost > 0 ? (totalPaid / totalCost) * 100 : 0
-    };
-  }, [GetAllPayable.data]);
+  }, [navigate, loadStats]);
 
   const statCards = [
     {

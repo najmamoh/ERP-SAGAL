@@ -4,10 +4,7 @@ import { GoPlus } from "react-icons/go";
 import { HiOutlineBuildingOffice2 } from 'react-icons/hi2';
 import { FiUsers, FiCalendar } from 'react-icons/fi';
 import { BsGraphUpArrow } from 'react-icons/bs';
-import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch, RootState } from '@/Redux/Store';
-import { getAllVendorsFn } from '@/Redux/Slice/GetAllVendor';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,28 +13,47 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { VendorForm } from '@/components/ui/VendorForm';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
+
+function isThisMonth(dateStr?: string) {
+  if (!dateStr) return false;
+  const createdDate = new Date(dateStr);
+  const now = new Date();
+  return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+}
 
 function Vendor() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
-  const vendorState = useSelector((state: RootState) => state.AllVendors);
+  const [tableKey, setTableKey] = useState(0);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [totalVendors, setTotalVendors] = useState(0);
+  const [activeVendors, setActiveVendors] = useState(0);
+  const [thisMonthVendors, setThisMonthVendors] = useState(0);
 
-  // Fetch vendors on component mount
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      const company_id = userInfo.user?.company_id || userInfo.company_id;
+      const res = await axios.get(`${Url}/vendors`, {
+        params: { page: 1, pageSize: 1000, ...(company_id && { company_id }) },
+        withCredentials: true,
+      });
+      const data = Array.isArray(res.data?.data) ? res.data.data : [];
+      setTotalVendors(res.data?.total ?? data.length);
+      setActiveVendors(data.length);
+      setThisMonthVendors(data.filter((v: { created_at?: string }) => isThisMonth(v.created_at)).length);
+    } catch {
+      /* keep last stats */
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    dispatch(getAllVendorsFn({ page: 1, pageSize: 1000 })); // Fetch all for stats
-  }, [dispatch]);
-
-  // Calculate statistics
-  const totalVendors = vendorState.total || 0;
-  const activeVendors = vendorState.data?.length || 0;
-  
-  // Calculate vendors created this month
-  const thisMonthVendors = vendorState.data?.filter((vendor) => {
-    const createdDate = new Date(vendor.created_at);
-    const now = new Date();
-    return createdDate.getMonth() === now.getMonth() && 
-           createdDate.getFullYear() === now.getFullYear();
-  }).length || 0;
+    loadStats();
+  }, [loadStats]);
 
   return (
     <div className='w-full min-h-screen px-4 md:px-6 lg:px-8 py-6 relative overflow-hidden'>
@@ -109,7 +125,7 @@ function Vendor() {
                 <div>
                   <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">{label}</p>
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {vendorState.isLoading ? '…' : value.toLocaleString()}
+                    {statsLoading ? '…' : value.toLocaleString()}
                   </h3>
                 </div>
                 <div className={`p-3 rounded-[6px] bg-gradient-to-br ${gradient} shadow-lg`}>
@@ -135,7 +151,7 @@ function Vendor() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">All vendors in one place</p>
         </div>
         <div className="overflow-x-auto">
-          <VendorTable />
+          <VendorTable key={tableKey} />
         </div>
       </motion.div>
 
@@ -169,7 +185,8 @@ function Vendor() {
               mode="create" 
               onSuccess={() => {
                 setIsCreateOpen(false);
-                dispatch(getAllVendorsFn({ page: 1, pageSize: 1000 }));
+                loadStats();
+                setTableKey((k) => k + 1);
               }}
             />
           </div>

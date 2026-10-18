@@ -47,13 +47,26 @@ interface productData {
   // Update the async thunk parameters
   export const getAllProductsFn = createAsyncThunk(
     'products/getAll',
-    async (params: { page: number; pageSize: number; search?: string }, { rejectWithValue }) => {
+    async (
+      params: {
+        page: number;
+        pageSize: number;
+        search?: string;
+        sortBy?: string;
+        sortOrder?: 'asc' | 'desc';
+      },
+      { rejectWithValue }
+    ) => {
       try {
         const requestParams: Record<string, unknown> = {
           page: params.page,
           pageSize: params.pageSize,
           search: params.search,
         };
+        if (params.sortBy && params.sortOrder) {
+          requestParams.sortBy = params.sortBy;
+          requestParams.sortOrder = params.sortOrder;
+        }
 
         const res = await axios.get(`${Url}/products`, {
           params: requestParams,

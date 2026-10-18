@@ -3,10 +3,10 @@ import { CompanyFilter } from '@/components/ui/CompanyFilter';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getCookie } from '@/lib/cookies';
 import { GoPlus } from 'react-icons/go';
-import { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/Redux/Store';
+import { useEffect, useState, useCallback } from 'react';
 import { IoIosNotifications } from 'react-icons/io';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
 import { HiOutlineCurrencyDollar } from 'react-icons/hi';
 import { RiMoneyDollarCircleLine, RiFileList3Line } from 'react-icons/ri';
 
@@ -15,31 +15,51 @@ function RecieveAble() {
   const location = useLocation();
   const isAdminDashboard = location.pathname.startsWith('/AdminDashboard');
   const [selectedCompanyId, setSelectedCompanyId] = useState<string>('');
-  const ReceiveAbleState = useSelector((state: RootState) => state.AllReceive);
+  const [stats, setStats] = useState({
+    totalCredit: 0,
+    totalPrice: 0,
+    totalReceived: 0,
+    totalItems: 0,
+    collectionProgress: 0,
+  });
+
+  const loadStats = useCallback(async () => {
+    try {
+      const raw = localStorage.getItem('userInfo') || getCookie('userInfo');
+      const userInfo = raw ? JSON.parse(raw) : {};
+      const token = userInfo.accessToken;
+      const company_Id = selectedCompanyId || userInfo.user?.company_id || userInfo.company_id;
+      const res = await axios.get(`${Url}/receivables/products`, {
+        params: { page: 1, pageSize: 1000, ...(company_Id && { company_id: company_Id }) },
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        withCredentials: true,
+      });
+      const list = Array.isArray(res.data?.data) ? res.data.data : Array.isArray(res.data) ? res.data : [];
+      const summary = res.data?.summary;
+      const totalCredit = summary != null ? summary.totalDebt : list.reduce((acc: number, item: any) => acc + parseFloat(item.credit || '0'), 0);
+      const totalPrice = summary != null ? summary.totalSales : list.reduce((acc: number, item: any) => acc + parseFloat(item.total_price || '0'), 0);
+      const totalReceived = summary != null ? summary.totalReceived : list.reduce((acc: number, item: any) => acc + parseFloat(item.received_amount || '0'), 0);
+      const totalItems = res.data?.total ?? list.length;
+      setStats({
+        totalCredit,
+        totalPrice,
+        totalReceived,
+        totalItems,
+        collectionProgress: totalPrice > 0 ? (totalReceived / totalPrice) * 100 : 0,
+      });
+    } catch {
+      /* keep last stats */
+    }
+  }, [selectedCompanyId]);
 
   useEffect(() => {
     const userInfo = localStorage.getItem('userInfo') || getCookie('userInfo');
     if (!userInfo) {
       navigate('/');
+    } else if (!(isAdminDashboard && !selectedCompanyId)) {
+      loadStats();
     }
-  }, [navigate]);
-
-  // Use server summary when available for real, trustable totals; else fallback to client sum from current data
-  const stats = useMemo(() => {
-    const list = ReceiveAbleState?.data ?? [];
-    const summary = ReceiveAbleState?.summary;
-    const totalCredit = summary != null ? summary.totalDebt : list.reduce((acc, item) => acc + parseFloat(item.credit || '0'), 0);
-    const totalPrice = summary != null ? summary.totalSales : list.reduce((acc, item) => acc + parseFloat(item.total_price || '0'), 0);
-    const totalReceived = summary != null ? summary.totalReceived : list.reduce((acc, item) => acc + parseFloat(item.received_amount || '0'), 0);
-    const totalItems = ReceiveAbleState?.total ?? list.length;
-    return {
-      totalCredit,
-      totalPrice,
-      totalReceived,
-      totalItems,
-      collectionProgress: totalPrice > 0 ? (totalReceived / totalPrice) * 100 : 0,
-    };
-  }, [ReceiveAbleState?.data, ReceiveAbleState?.summary, ReceiveAbleState?.total]);
+  }, [navigate, isAdminDashboard, selectedCompanyId, loadStats]);
 
   const statCards = [
     {

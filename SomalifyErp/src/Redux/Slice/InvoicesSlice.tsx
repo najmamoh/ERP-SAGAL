@@ -81,13 +81,14 @@ const initialState ={
 };
 export const getAllInvoiceFn = createAsyncThunk(
     'AllInvoice',
-    async (params: { page: number; pageSize: number }, { rejectWithValue }) => {
+    async (params: { page: number; pageSize: number; search?: string }, { rejectWithValue }) => {
         try {
 
           const res = await axios.get(`${Url}/invoice`, {
             params: {
               page: params.page,
-              pageSize: params.pageSize
+              pageSize: params.pageSize,
+              ...(params.search && params.search.trim() && { search: params.search.trim() }),
             },
             withCredentials: true,
           });

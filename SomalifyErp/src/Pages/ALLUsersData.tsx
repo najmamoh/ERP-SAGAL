@@ -11,6 +11,7 @@ import { AppDispatch, RootState } from '@/Redux/Store';
 import { GetAllUserCompnyFN, resetAllUsersCompnay } from '@/Redux/Slice/AllComUsersSlice';
 import { delUserFn, resetDelUser } from '@/Redux/Slice/Deluser';
 import IconButton from "@mui/material/IconButton";
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
 
 const columns: GridColDef[] = [
   { field: 'user_id', headerName: 'ID', width: 90 },
@@ -64,10 +65,12 @@ export default function DataUsersCom() {
   const navigate = useNavigate();
   const UserDataState = useSelector((state: RootState) => state.ALLUsers);
   const DelUserDataState = useSelector((state: RootState) => state.DelUser);
+  const [searchInput, setSearchInput] = React.useState('');
+  const search = useDebouncedValue(searchInput);
 
   React.useEffect(() => {
-    dispatch(GetAllUserCompnyFN());
-  }, [dispatch]);
+    dispatch(GetAllUserCompnyFN(search));
+  }, [dispatch, search]);
 
   React.useEffect(() => {
     if (UserDataState.isLoading) toast.loading('Loading...', { id: 'users' });
@@ -91,6 +94,7 @@ export default function DataUsersCom() {
 
   return (
     <Box className="w-full">
+      <TableSearch value={searchInput} onChange={setSearchInput} placeholder="Search users..." />
       <DataGrid
         rows={UserDataState.data.map((u) => ({ id: u.user_id, ...u }))}
         columns={columns}

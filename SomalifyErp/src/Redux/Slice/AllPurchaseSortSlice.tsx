@@ -51,13 +51,14 @@ const initialState = {
 
 export const getAllPurchasesSortFn = createAsyncThunk(
   'getAllpurchases',
-  async (params: { page: number; pageSize: number; company_id?: string }, { rejectWithValue }) => {
+  async (params: { page: number; pageSize: number; company_id?: string; search?: string }, { rejectWithValue }) => {
     try {
       const res = await axios.get(`${Url}/purchases`, {
         params: {
             page: params.page,
             pageSize: params.pageSize,
             ...(params.company_id && { company_id: params.company_id }),
+            ...(params.search && params.search.trim() && { search: params.search.trim() }),
           },
         withCredentials: true,
       });

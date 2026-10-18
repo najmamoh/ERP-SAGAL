@@ -25,11 +25,13 @@ const initialState ={
 };
 export const getAllEmployersFn= createAsyncThunk<
     employeeData[],
-    string | undefined
+    string | { companyId?: string; search?: string } | undefined
 >(
     'getAllEmployer',
-    async(companyId,{rejectWithValue})=>{
+    async(arg,{rejectWithValue})=>{
         try {
+            const companyId = typeof arg === 'string' ? arg : arg?.companyId;
+            const search = typeof arg === 'object' && arg ? arg.search : undefined;
             const userInfo = JSON.parse(localStorage.getItem("userInfo") || '{}');
             const isAdminDashboard = window.location.pathname.startsWith('/AdminDashboard');
             const roles = userInfo.user?.roles || userInfo.roles || [];
@@ -46,6 +48,9 @@ export const getAllEmployersFn= createAsyncThunk<
             const requestParams: any = {};
             if (compnay_Id) {
                 requestParams.company_id = compnay_Id;
+            }
+            if (search && search.trim()) {
+                requestParams.search = search.trim();
             }
 
             const res= await axios.get(`${Url}/employees`,{

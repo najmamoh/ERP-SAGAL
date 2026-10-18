@@ -3,6 +3,7 @@ import { AppDispatch, RootState } from "@/Redux/Store";
 import Box from '@mui/material/Box';
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
+import TableSearch, { useDebouncedValue } from "@/components/ui/TableSearch";
 import { useDispatch } from "react-redux";
  
 import { useSelector } from "react-redux";
@@ -121,12 +122,12 @@ function EmployersData({ selectedCompanyId, onRefresh }: EmployersDataProps) {
   const isSuperAdmin = roles.includes('superAdmin') || roles.includes('super_admin');
   const userCompanyId = userInfo.user?.company_id || userInfo.company_id;
   const companyId = isSuperAdmin ? selectedCompanyId : userCompanyId;
+  const [searchInput, setSearchInput] = useState('');
+  const search = useDebouncedValue(searchInput);
 
   useEffect(() => {
-    if (companyId) {
-      dispatch(getAllEmployersFn(companyId));
-    }
-  }, [dispatch, companyId]);
+    dispatch(getAllEmployersFn({ companyId, search }));
+  }, [dispatch, companyId, search]);
 
 
 
@@ -173,6 +174,7 @@ const DeleteEmplyState= useSelector((state:RootState)=>state.deleteEmployee)
       }}
     >
       <Box sx={{ flex: 1, width: '100%', minWidth: 0, overflow: 'hidden' }}>
+        <TableSearch value={searchInput} onChange={setSearchInput} placeholder="Search employees..." />
         <DataGrid
           rows={AllEmployeesState.data.map((employer) => ({ id: employer.employee_id, ...employer }))}
           columns={getColumns(handleDelete)}

@@ -6,11 +6,12 @@ import { motion } from 'framer-motion';
 import { HiOutlineUserGroup, HiOutlineCurrencyDollar } from 'react-icons/hi2';
 import { FiUsers } from 'react-icons/fi';
 import { RiFileList3Line } from 'react-icons/ri';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/Redux/Store';
-import { getAllEmployersFn } from '@/Redux/Slice/Employe/AllEmloyers';
 import { getAllCompaniesFn } from '@/Redux/Slice/GetAllCompaniesSlice';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
 import {
   Dialog,
   DialogContent,
@@ -25,9 +26,9 @@ import { Link } from "react-router-dom";
 function AllEmoloye() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
+  const [tableKey, setTableKey] = useState(0);
   const hasInitializedCompany = useRef(false);
   const dispatch = useDispatch<AppDispatch>();
-  const AllEmployeesState = useSelector((state: RootState) => state.AllEmployes);
   const AllCompaniesState = useSelector((state: RootState) => state.AllCompanies);
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
   const roles = userInfo.user?.roles || userInfo.roles || [];
@@ -49,20 +50,31 @@ function AllEmoloye() {
     }
   }, [isSuperAdmin, AllCompaniesState.data, userCompanyId]);
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const totalEmployees = AllEmployeesState.data?.length || 0;
-    const totalSalary = AllEmployeesState.data?.reduce((acc, emp) => {
-      return acc + parseFloat(emp.salary_amount || '0');
-    }, 0) || 0;
-    const avgSalary = totalEmployees > 0 ? totalSalary / totalEmployees : 0;
+  const [stats, setStats] = useState({ totalEmployees: 0, totalSalary: 0, avgSalary: 0 });
 
-    return {
-      totalEmployees,
-      totalSalary,
-      avgSalary,
-    };
-  }, [AllEmployeesState.data]);
+  const loadStats = useCallback(async () => {
+    const companyId = isSuperAdmin ? selectedCompanyId : userCompanyId;
+    try {
+      const res = await axios.get(`${Url}/employees`, {
+        params: companyId ? { company_id: companyId } : {},
+        withCredentials: true,
+      });
+      const data = Array.isArray(res.data) ? res.data : res.data?.data ?? [];
+      const totalEmployees = data.length;
+      const totalSalary = data.reduce((acc: number, emp: { salary_amount?: string }) => acc + parseFloat(emp.salary_amount || '0'), 0);
+      setStats({
+        totalEmployees,
+        totalSalary,
+        avgSalary: totalEmployees > 0 ? totalSalary / totalEmployees : 0,
+      });
+    } catch {
+      /* keep last stats */
+    }
+  }, [isSuperAdmin, selectedCompanyId, userCompanyId]);
+
+  useEffect(() => {
+    loadStats();
+  }, [loadStats]);
 
   const statCards = [
     {
@@ -117,7 +129,6 @@ function AllEmoloye() {
                   selectedCompanyId={selectedCompanyId}
                   onCompanyChange={(id) => {
                     setSelectedCompanyId(id);
-                    if (id) dispatch(getAllEmployersFn(id));
                   }}
                 />
               )}
@@ -195,8 +206,12 @@ function AllEmoloye() {
           <div className='p-4 overflow-x-auto'>
             <div className='min-w-0 w-full'>
               <EmployersData
+                key={tableKey}
                 selectedCompanyId={selectedCompanyId}
-                onRefresh={() => dispatch(getAllEmployersFn(isSuperAdmin && selectedCompanyId ? selectedCompanyId : undefined))}
+                onRefresh={() => {
+                  loadStats();
+                  setTableKey((k) => k + 1);
+                }}
               />
             </div>
           </div>
@@ -218,7 +233,8 @@ function AllEmoloye() {
             <EmployeeForm
               onSuccess={() => {
                 setIsCreateOpen(false);
-                dispatch(getAllEmployersFn(isSuperAdmin ? selectedCompanyId : undefined));
+                loadStats();
+                setTableKey((k) => k + 1);
               }}
             />
           </div>

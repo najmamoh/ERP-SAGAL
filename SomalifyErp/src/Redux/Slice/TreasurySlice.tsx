@@ -115,7 +115,7 @@ export const getAllCompanyBalancesFn = createAsyncThunk(
 // ---------------- GET ALL TREASURIES (optional type: 'sent' | 'received', company_id) ----------------
 export const getAllTreasuriesFn = createAsyncThunk(
   "treasury/getAll",
-  async (params: { type?: "sent" | "received"; company_id?: string } | undefined, { rejectWithValue }) => {
+  async (params: { type?: "sent" | "received"; company_id?: string; search?: string } | undefined, { rejectWithValue }) => {
     try {
       const userRaw = localStorage.getItem("userInfo") ?? getCookie("userInfo");
       const userInfo = userRaw ? JSON.parse(userRaw) : {};
@@ -124,6 +124,7 @@ export const getAllTreasuriesFn = createAsyncThunk(
       const queryParams = new URLSearchParams();
       if (params?.type) queryParams.set("type", params.type);
       if (company_id) queryParams.set("company_id", company_id);
+      if (params?.search?.trim()) queryParams.set("search", params.search.trim());
       const query = queryParams.toString() ? `?${queryParams}` : "";
 
       const res = await axios.get(`${Url}/treasury/transfers${query}`, {

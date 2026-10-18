@@ -56,7 +56,8 @@ function CompanyExpenses() {
   const isAdminDashboard = location.pathname.startsWith('/AdminDashboard');
   const basePath = isAdminDashboard ? '/AdminDashboard' : '/Dashboard';
 
-  const { data = [], total = 0 } = useSelector((state: RootState) => state.CompanyExpenses) ?? {};
+  const { data = [] } = useSelector((state: RootState) => state.CompanyExpenses) ?? {};
+  const [overallRecords, setOverallRecords] = useState(0);
 
   const [chartPeriod, setChartPeriod] = useState<number>(6);
   const [stats, setStats] = useState<{
@@ -115,6 +116,12 @@ function CompanyExpenses() {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         withCredentials: true,
       });
+
+    axios.get(`${Url}/otherexpenses`, {
+      params: { page: 1, pageSize: 1, company_id: companyId },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      withCredentials: true,
+    }).then((res) => setOverallRecords(res.data?.total ?? 0)).catch(() => {});
 
     Promise.all([req(thisStart, thisEnd), req(lastStart, lastEnd)])
       .then(([resThis, resLast]) => {
@@ -222,8 +229,8 @@ function CompanyExpenses() {
       (acc, e) => acc + parseFloat(e.item_cost || '0') * (e.item_qty || 0),
       0
     );
-    return { totalPaid, totalCost, totalRecords: total };
-  }, [data, total]);
+    return { totalPaid, totalCost, totalRecords: overallRecords };
+  }, [data, overallRecords]);
 
   return (
     <div className="min-h-screen bg-slate-50/80 overflow-auto">

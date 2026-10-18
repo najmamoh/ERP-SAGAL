@@ -11,6 +11,8 @@ import { AppDispatch, RootState } from "@/Redux/Store";
 import { Link } from "react-router-dom";
 import { getAllSaleListFn } from "@/Redux/Slice/AllSalesSlice";
 import { delSaleFn, resetDelSale } from "@/Redux/Slice/DeleteSale";
+import axios from "axios";
+import { Url } from "@/Interfaces";
 import { CompanyFilter } from "@/components/ui/CompanyFilter";
 import SideParsm from "@/components/SideParsm";
 import toast from "react-hot-toast";
@@ -123,21 +125,43 @@ export default function AllSalesList() {
   const [searchInput, setSearchInput] = React.useState("");
   const [searchQuery, setSearchQuery] = React.useState("");
   const [paginationModel, setPaginationModel] = React.useState({ page: 0, pageSize: 20 });
+  const [stats, setStats] = React.useState({ totalSales: 0, totalReceived: 0, totalQty: 0 });
 
   React.useEffect(() => {
     const t = setTimeout(() => setSearchQuery(searchInput), 400);
     return () => clearTimeout(t);
   }, [searchInput]);
 
-  const stats = React.useMemo(() => {
-    const list = state.data ?? [];
-    return {
-      totalSales: state.total ?? 0,
-      totalReceived: list.reduce((sum, s) => sum + parseFloat(s.received_amount || "0"), 0),
-      totalQty: list.reduce((sum, s) => sum + parseFloat(String(s.sale_qty ?? 0).replace(',', '.')), 0),
-      pageCount: list.length,
-    };
-  }, [state.data, state.total]);
+  const loadStats = React.useCallback(async () => {
+    try {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo") || "{}");
+      const headers: Record<string, string> = {};
+      if (userInfo.accessToken) headers.Authorization = `Bearer ${userInfo.accessToken}`;
+      const res = await axios.get(`${Url}/sales`, {
+        params: {
+          page: 1,
+          pageSize: 1000,
+          ...(selectedCompanyId && { company_id: selectedCompanyId }),
+        },
+        headers,
+        withCredentials: true,
+      });
+      const list = Array.isArray(res.data?.data) ? res.data.data : [];
+      setStats({
+        totalSales: res.data?.total ?? list.length,
+        totalReceived: list.reduce((sum: number, s: { received_amount?: string }) => sum + parseFloat(s.received_amount || "0"), 0),
+        totalQty: list.reduce((sum: number, s: { sale_qty?: string | number }) => sum + parseFloat(String(s.sale_qty ?? 0).replace(",", ".")), 0),
+      });
+    } catch {
+      /* keep last stats */
+    }
+  }, [selectedCompanyId]);
+
+  React.useEffect(() => {
+    loadStats();
+  }, [loadStats]);
+
+  const pageCount = state.data?.length ?? 0;
 
   React.useEffect(() => {
     dispatch(
@@ -154,12 +178,13 @@ export default function AllSalesList() {
     if (delSaleState.isSuccess) {
       toast.success("Sale deleted successfully");
       dispatch(resetDelSale());
+      loadStats();
     }
     if (delSaleState.isError) {
       toast.error(delSaleState.errorMsg || "Error deleting sale");
       dispatch(resetDelSale());
     }
-  }, [delSaleState, dispatch]);
+  }, [delSaleState, dispatch, loadStats]);
 
   React.useEffect(() => {
     if (state.isLoading) toast.loading("Loading...", { id: "sales-toast" });
@@ -234,8 +259,8 @@ export default function AllSalesList() {
                   All sales (all companies)
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  {stats.pageCount > 0
-                    ? `Showing ${stats.pageCount} records · ${stats.totalSales} total`
+                  {pageCount > 0
+                    ? `Showing ${pageCount} records · ${stats.totalSales} total`
                     : "No sales yet."}
                 </p>
               </div>

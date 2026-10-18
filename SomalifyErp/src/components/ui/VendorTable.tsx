@@ -17,6 +17,7 @@ import {
 import { VendorForm } from '@/components/ui/VendorForm';
 import { motion } from 'framer-motion';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
 
 const getColumns = (onRefresh: () => void, onUpdate: (id: number) => void): GridColDef[] => [
   { field: 'vendor_id', headerName: 'ID', width: 90 },
@@ -191,6 +192,8 @@ export const ActionCell = (params: any & { onRefresh?: () => void; onUpdate?: (i
 };
 
 export default function VendorTable() {
+  const [searchInput, setSearchInput] = React.useState('');
+  const search = useDebouncedValue(searchInput);
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0, // MUI uses 0-based index
     pageSize: 20,
@@ -203,9 +206,10 @@ export default function VendorTable() {
   const refreshTable = React.useCallback(() => {
     dispatch(getAllVendorsFn({
       page: paginationModel.page + 1, // Convert to 1-based for backend
-      pageSize: paginationModel.pageSize
+      pageSize: paginationModel.pageSize,
+      search,
     }));
-  }, [dispatch, paginationModel.page, paginationModel.pageSize]);
+  }, [dispatch, paginationModel.page, paginationModel.pageSize, search]);
 
   React.useEffect(() => {
     refreshTable();
@@ -254,6 +258,7 @@ export default function VendorTable() {
       }}
     >
       <Box className="flex-1 w-full">
+        <TableSearch value={searchInput} onChange={(v) => { setSearchInput(v); setPaginationModel((p) => ({ ...p, page: 0 })); }} placeholder="Search vendors..." />
         <DataGrid
           rows={AllVendorState.data.map((vendor) => ({ id: vendor.vendor_id, ...vendor }))}
           columns={columns}

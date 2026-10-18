@@ -14,6 +14,7 @@ import {
   cancelTransferFn,
 } from "@/Redux/Slice/TreasurySlice";
 import { format } from "date-fns";
+import TableSearch, { useDebouncedValue } from "@/components/ui/TableSearch";
 
 export type TransferFilterType = "all" | "sent" | "received";
 
@@ -44,13 +45,16 @@ export default function TreasuryTable({ transferFilter = "all", selectedCompanyI
 
   const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
   const [actionId, setActionId] = React.useState<string | null>(null);
+  const [searchInput, setSearchInput] = React.useState("");
+  const search = useDebouncedValue(searchInput);
 
-  const fetchParams = React.useMemo((): { type?: "sent" | "received"; company_id?: string } | undefined => {
-    const p: { type?: "sent" | "received"; company_id?: string } =
+  const fetchParams = React.useMemo((): { type?: "sent" | "received"; company_id?: string; search?: string } | undefined => {
+    const p: { type?: "sent" | "received"; company_id?: string; search?: string } =
       transferFilter !== "all" ? { type: transferFilter } : {};
     if (selectedCompanyId) p.company_id = selectedCompanyId;
+    if (search.trim()) p.search = search.trim();
     return Object.keys(p).length ? p : undefined;
-  }, [transferFilter, selectedCompanyId]);
+  }, [transferFilter, selectedCompanyId, search]);
 
   const handleConfirm = React.useCallback(
     async (id: string) => {
@@ -313,6 +317,7 @@ export default function TreasuryTable({ transferFilter = "all", selectedCompanyI
 
   return (
     <Box sx={{ width: "100%" }}>
+      <TableSearch value={searchInput} onChange={setSearchInput} placeholder="Search treasury..." />
       {selectedRows.length > 0 && (
         <div className="flex items-center gap-3 mb-3">
           <p className="text-sm text-slate-500">

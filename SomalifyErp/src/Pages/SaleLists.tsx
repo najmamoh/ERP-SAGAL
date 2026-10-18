@@ -3,11 +3,10 @@ import { GoPlus } from "react-icons/go";
 import { HiOutlineShoppingCart } from 'react-icons/hi2';
 import { FiDollarSign, FiCalendar } from 'react-icons/fi';
 import { BsGraphUpArrow } from 'react-icons/bs';
-import { useState, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { AppDispatch, RootState } from '@/Redux/Store';
-import { getAllSaleListFn } from '@/Redux/Slice/AllSalesSlice';
+import { useState, useEffect, useCallback } from 'react';
 import SaleListData from './AllSales';
+import axios from 'axios';
+import { Url } from '@/Interfaces';
 import {
   Dialog,
   DialogContent,
@@ -19,29 +18,41 @@ import { SalesForm } from '@/components/ui/SalesForm';
 
 function SaleDTa() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const dispatch = useDispatch<AppDispatch>();
-  const saleState = useSelector((state: RootState) => state.GetAllSale);
+  const [tableKey, setTableKey] = useState(0);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [totalSales, setTotalSales] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [thisMonthSales, setThisMonthSales] = useState(0);
 
-  // Fetch sales on component mount
+  const loadStats = useCallback(async () => {
+    setStatsLoading(true);
+    try {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      const headers: Record<string, string> = {};
+      if (userInfo.accessToken) headers.Authorization = `Bearer ${userInfo.accessToken}`;
+      const res = await axios.get(`${Url}/sales`, {
+        params: { page: 1, pageSize: 1000 },
+        headers,
+        withCredentials: true,
+      });
+      const data = Array.isArray(res.data?.data) ? res.data.data : [];
+      const now = new Date();
+      setTotalSales(res.data?.total ?? data.length);
+      setTotalRevenue(data.reduce((sum: number, sale: { received_amount?: string }) => sum + (parseFloat(sale.received_amount || '0')), 0));
+      setThisMonthSales(data.filter((sale: { created_at?: string }) => {
+        const createdDate = new Date(sale.created_at || '');
+        return createdDate.getMonth() === now.getMonth() && createdDate.getFullYear() === now.getFullYear();
+      }).length);
+    } catch {
+      /* keep last stats */
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
-    dispatch(getAllSaleListFn({ page: 1, pageSize: 1000 })); // Fetch all for stats
-  }, [dispatch]);
-
-  // Calculate statistics
-  const totalSales = saleState.total || 0;
-  
-  // Calculate total revenue
-  const totalRevenue = saleState.data?.reduce((sum, sale) => {
-    return sum + (parseFloat(sale.received_amount || '0'));
-  }, 0) || 0;
-  
-  // Calculate sales created this month
-  const thisMonthSales = saleState.data?.filter((sale) => {
-    const createdDate = new Date(sale.created_at);
-    const now = new Date();
-    return createdDate.getMonth() === now.getMonth() && 
-           createdDate.getFullYear() === now.getFullYear();
-  }).length || 0;
+    loadStats();
+  }, [loadStats]);
 
   return (
     <div className='w-full min-h-screen px-4 md:px-6 lg:px-8 py-6 bg-gradient-to-br from-slate-50 via-blue-50/40 to-indigo-50/30 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800'>
@@ -116,7 +127,7 @@ function SaleDTa() {
                   Total Sales
                 </p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {saleState.isLoading ? (
+                  {statsLoading ? (
                     <span className="text-sm">Loading...</span>
                   ) : (
                     totalSales.toLocaleString()
@@ -144,7 +155,7 @@ function SaleDTa() {
                   Total Revenue
                 </p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {saleState.isLoading ? (
+                  {statsLoading ? (
                     <span className="text-sm">Loading...</span>
                   ) : (
                     `$${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -172,7 +183,7 @@ function SaleDTa() {
                   This Month
                 </p>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  {saleState.isLoading ? (
+                  {statsLoading ? (
                     <span className="text-sm">Loading...</span>
                   ) : (
                     thisMonthSales.toLocaleString()
@@ -207,7 +218,7 @@ function SaleDTa() {
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">All your sales in one place</p>
         </div>
         <div className="overflow-x-auto">
-          <SaleListData/>
+          <SaleListData key={tableKey} />
         </div>
       </motion.div>
 
@@ -226,7 +237,8 @@ function SaleDTa() {
             <SalesForm 
               onSuccess={() => {
                 setIsCreateOpen(false);
-                dispatch(getAllSaleListFn({ page: 1, pageSize: 1000 }));
+                loadStats();
+                setTableKey((k) => k + 1);
               }}
             />
           </div>

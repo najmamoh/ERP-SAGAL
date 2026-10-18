@@ -11,6 +11,7 @@ import { AppDispatch, RootState } from '@/Redux/Store';
 import { getAllCompanyUsersFn } from '@/Redux/Slice/AllCompanyUsersSlice';
 import { delUserFn, resetDelUser } from '@/Redux/Slice/Deluser';
 import IconButton from '@mui/material/IconButton';
+import TableSearch, { useDebouncedValue } from '@/components/ui/TableSearch';
 
 const getColumns = (isAdmin: boolean): GridColDef[] => [
   { field: 'user_id', headerName: 'ID', width: 90 },
@@ -99,12 +100,14 @@ export default function AdminUsersData() {
   const basePath = isAdminDashboard ? '/AdminDashboard' : '/Dashboard';
   const UserDataState = useSelector((state: RootState) => state.allCompanyUsers);
   const DelUserDataState = useSelector((state: RootState) => state.DelUser);
+  const [searchInput, setSearchInput] = React.useState('');
+  const search = useDebouncedValue(searchInput);
 
   const columns = React.useMemo(() => getColumns(isAdminDashboard), [isAdminDashboard]);
 
   React.useEffect(() => {
-    dispatch(getAllCompanyUsersFn());
-  }, [dispatch]);
+    dispatch(getAllCompanyUsersFn(search));
+  }, [dispatch, search]);
 
   React.useEffect(() => {
     if (UserDataState.isLoading) toast.loading('Loading...', { id: 'admin-users' });
@@ -125,6 +128,7 @@ export default function AdminUsersData() {
 
   return (
     <Box className="w-full">
+      <TableSearch value={searchInput} onChange={setSearchInput} placeholder="Search users..." />
       <DataGrid
         rows={(UserDataState.data || []).map((u) => ({ id: u.user_id, ...u }))}
         columns={columns}
