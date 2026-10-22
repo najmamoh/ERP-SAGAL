@@ -1,6 +1,5 @@
 import { PayPayablFn, resetPayablesPayment } from '@/Redux/Slice/PayPayable'
 import { AppDispatch, RootState } from '@/Redux/Store'
-import Nav from '@/components/Nav'
 
 import  { FormEvent, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -65,26 +64,24 @@ function Payment() {
 
   
   return (
-    <div className='min-h-screen dark:text-white'>
-        <div className='p-3 flex items-center justify-between  '>
-        <div className="navhome p-0 flex w-full justify-end">
-          <Nav/>
-        </div>
+    <div className='soft-page'>
+      <div className='mb-4'>
+        <h1 className='soft-title'>Payment</h1>
+        <p className='soft-subtitle'>Record a payment against this payable.</p>
       </div>
-        <div>
-            <h1 className=' dark:text-white '>Payment</h1>
-            <div className='bg-white  p-8 rounded-xl mt-7'>
-                <form action="" onSubmit={handleSubmit} className='flex flex-col text-black w-[95%] m-auto'>
-                   <label className='text-black' htmlFor=""> New_Paid_Amount </label>
-                   <input value={new_paid_amount} onChange={(e) => setPaid(e.target.value)} type="number" className='border-2 rounded-xl p-2 mb-4' placeholder='Enter Amoutn here.'/>
-                   <label className='text-black' htmlFor=""> new discount </label>
-                   <input type="number" value={new_purchase_discount} onChange={(e) => setDiscount(e.target.value)} className='border-2 rounded-xl p-2' placeholder='Enter Amoutn here.'/>
-                   <button type='submit' className='bg-[#605BFF] min-w-[160px] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] my-8 text-white p-2   '>Pay money</button>
-                </form>
-
-            </div>
+      <form action="" onSubmit={handleSubmit} className='soft-card gap-4 max-w-xl'>
+        <div className='soft-field-wrap'>
+          <label className='soft-label' htmlFor='paid'>Paid amount</label>
+          <input id='paid' value={new_paid_amount} onChange={(e) => setPaid(e.target.value)} type="number" className='soft-field' placeholder='Enter amount here.'/>
         </div>
-
+        <div className='soft-field-wrap'>
+          <label className='soft-label' htmlFor='discount'>Discount</label>
+          <input id='discount' type="number" value={new_purchase_discount} onChange={(e) => setDiscount(e.target.value)} className='soft-field' placeholder='Enter amount here.'/>
+        </div>
+        <div className='soft-actions'>
+          <button type='submit' className='soft-submit'>Pay money</button>
+        </div>
+      </form>
     </div>
   )
 }

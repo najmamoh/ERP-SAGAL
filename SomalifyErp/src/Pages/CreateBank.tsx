@@ -104,14 +104,16 @@ export function CreateBank() {
   }, [navigate]);
   
   return (
-    <div className="min-h-screen">
-      <div className="p-4 sm:p-6">
-        <h1 className="font-semibold text-lg">Create Bank</h1>
-        <form onSubmit={handleSubmit} className="bg-white text-black my-2 p-4 rounded-[8px] w-full flex flex-col">
+    <div className="soft-page">
+      <div className="mb-4">
+        <h1 className="soft-title">Create Bank</h1>
+        <p className="soft-subtitle">Add one or more bank accounts.</p>
+      </div>
+        <form onSubmit={handleSubmit} className="soft-card">
           <div className="flex gap-2 justify-end px-4">
             <button
               type="button"
-              className="bg-[#008CC8] px-2 gap-2 flex items-center text-white rounded-xl"
+              className="soft-btn-secondary"
               onClick={() => document.getElementById('excel-import')?.click()}
             >
               <span className="text-xl"><CiImport /></span> Import Excel
@@ -125,7 +127,7 @@ export function CreateBank() {
             />
             <button
               type="button"
-              className="p-2 flex gap-2 items-center"
+              className="soft-btn-ghost"
               onClick={handleAddNewInput}
             >
               <span className="bg-[#E1E0FF] text-xl p-2 rounded-full"><GoPlus /></span>Add New
@@ -134,12 +136,12 @@ export function CreateBank() {
           {formInputs.map((input, index) => (
             <div key={index}>
               <div className="formdiv flex flex-col gap-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                   <div className="flex flex-col">
                     <label htmlFor="">Bank Name</label>
                     <input
                       type="text"
-                      className="border border-gray-400 rounded-[10px] p-2"
+                      className="soft-field"
                       value={input.bank_name}
                       onChange={(e) => handleInputChange(index, 'bank_name', e.target.value)}
                     />
@@ -148,7 +150,7 @@ export function CreateBank() {
                     <label htmlFor="">Amount</label>
                     <input
                       type="number"
-                      className="border border-gray-400 rounded-[10px] p-2"
+                      className="soft-field"
                       value={input.amount}
                       onChange={(e) => handleInputChange(index, 'amount', e.target.value)}
                     />
@@ -157,7 +159,7 @@ export function CreateBank() {
                     <label htmlFor="">Sale ID (Optional)</label>
                     <input
                       type="number"
-                      className="border border-gray-400 rounded-[10px] p-2"
+                      className="soft-field"
                       value={input.sale_id}
                       onChange={(e) => handleInputChange(index, 'sale_id', e.target.value)}
                       placeholder="Leave empty if not linked to sale"
@@ -177,11 +179,10 @@ export function CreateBank() {
               {index !== formInputs.length - 1 && <hr />}
             </div>
           ))}
-          <div className="div flex justify-end my-4">
-            <button type='submit' className='bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] text-white p-2'>Create Bank</button>
+          <div className="soft-actions">
+            <button type='submit' className='soft-submit'>Create Bank</button>
           </div>
         </form>
-      </div>
     </div>
   );
 }

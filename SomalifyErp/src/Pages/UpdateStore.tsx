@@ -106,7 +106,7 @@ export default function UpdateStore() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800">
+    <div className="soft-page">
       <div className="p-4 md:p-8 max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -209,7 +209,7 @@ export default function UpdateStore() {
                 <button
                   type="submit"
                   disabled={UpdateStoreState.isLoading || !store_name.trim()}
-                  className="px-6 py-3 rounded-2xl bg-gradient-to-r from-slate-600 via-blue-600 to-indigo-600 text-white font-semibold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all"
+                  className="soft-submit"
                 >
                   {UpdateStoreState.isLoading ? 'Updating...' : 'Update Store'}
                 </button>

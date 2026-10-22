@@ -7,15 +7,16 @@ import { AppDispatch, RootState } from '@/Redux/Store';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 function UpdatePurchase() {
   const toastId = "update";
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const OnePurchaseState = useSelector((state: RootState) => state.GetOnePurhhase);
-  const UpdatePurchaseState = useSelector((state: RootState) => state.UpdateSale);
+  const UpdatePurchaseState = useSelector((state: RootState) => state.UpdatePurchase);
 
   const params = useParams();
   const id = params.purchase_id;
@@ -61,20 +62,20 @@ function UpdatePurchase() {
   // Toast notifications for update status
   useEffect(() => {
     if (UpdatePurchaseState.isLoading) {
-      toast.loading('Updating Sale...', { id: toastId });
+      toast.loading('Updating purchase...', { id: toastId });
+      return;
     }
     if (UpdatePurchaseState.IsSuccess) {
-      toast.success('Successfully updated sale.', { id: toastId });
-      navigate('/Dashboard/Purchases/All');
+      toast.success('Purchase updated.', { id: toastId });
+      const base = location.pathname.startsWith('/AdminDashboard') ? '/AdminDashboard' : '/Dashboard';
+      navigate(`${base}/Purchases`);
       dispatch(resetPurchaseUpdates());
     }
     if (UpdatePurchaseState.isError) {
-      toast.error(UpdatePurchaseState.errorMsg, { id: toastId });
-    }
-    if (UpdatePurchaseState.isLoading || UpdatePurchaseState.IsSuccess || UpdatePurchaseState.isError) {
+      toast.error(UpdatePurchaseState.errorMsg || 'Could not update purchase.', { id: toastId });
       dispatch(resetPurchaseUpdates());
     }
-  }, [UpdatePurchaseState.isLoading, UpdatePurchaseState.IsSuccess, UpdatePurchaseState.isError, dispatch, navigate]);
+  }, [UpdatePurchaseState.isLoading, UpdatePurchaseState.IsSuccess, UpdatePurchaseState.isError, UpdatePurchaseState.errorMsg, dispatch, navigate, location.pathname]);
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
@@ -95,92 +96,95 @@ function UpdatePurchase() {
   };
 
   return (
-    <div className="min-h-screen text-black dark:text-white">
-      <div className="p-4 sm:p-6">
-        <h1 className="font-semibold text-lg dark:text-white">Update Purchase</h1>
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 my-2 p-4 rounded-[8px] w-full flex flex-col">
+    <div className="soft-page">
+      <div className="max-w-6xl">
+        <div className="mb-4">
+          <h1 className="soft-title">Update Purchase</h1>
+          <p className="soft-subtitle">Edit this purchase, then save your changes.</p>
+        </div>
+        <form onSubmit={handleSubmit} className="soft-card">
           <div className="formdiv flex flex-col gap-4">
-            <div className="grid grid-cols-4 gap-2">
-              <div className="flex flex-col">
-                <label htmlFor="product_name">Product Name</label>
+            <div className="soft-grid">
+              <div className="soft-field-wrap">
+                <label htmlFor="product_name" className="soft-label">Product Name</label>
                 <input
                   type="text"
                   name="product_name"
-                  className="border border-gray-400 rounded-[10px] p-2"
-                  value={ OnePurchaseState.data.products?.product_name}
+                  className="soft-field"
+                  value={OnePurchaseState.data?.products?.product_name || ''}
                   disabled
                 />
               </div>
-              
-              <div className="flex flex-col">
-                <label htmlFor="purchase_qty">Purchase Quantity</label>
+
+              <div className="soft-field-wrap">
+                <label htmlFor="purchase_qty" className="soft-label">Purchase Quantity</label>
                 <input
                   type="number"
                   name="purchase_qty"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.purchase_qty}
                   onChange={handleInputChange}
                   min="0.01"
                   step="any"
                 />
               </div>
-              <div className="flex flex-col">
-                <label htmlFor="item_cost">Item Cost</label>
+              <div className="soft-field-wrap">
+                <label htmlFor="item_cost" className="soft-label">Item Cost</label>
                 <input
                   type="text"
                   name="item_cost"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.item_cost}
                   disabled
                 />
               </div>
-              <div className="flex flex-col">
-                <label htmlFor="purchase_discount">Discount</label>
+              <div className="soft-field-wrap">
+                <label htmlFor="purchase_discount" className="soft-label">Discount</label>
                 <input
                   type="tel"
                   name="purchase_discount"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.purchase_discount}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className="flex flex-col">
-                <label htmlFor="paid_amount">Paid Amount</label>
+              <div className="soft-field-wrap">
+                <label htmlFor="paid_amount" className="soft-label">Paid Amount</label>
                 <input
                   type="text"
                   name="paid_amount"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.paid_amount}
                   onChange={handleInputChange}
                 />
               </div>
-              <div className='flex flex-col justify-center'>
-  <label htmlFor="manufacture_date">Manufactured date</label>
-  <input
-    type="date"
-    id="manufacture_date"
-    name="manufacture_date" // Add this
-    value={vendorData.manufacture_date?.split('T')[0] || ''} // Format ISO date
-    onChange={handleInputChange}
-    className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
-  />
-</div>
+              <div className="soft-field-wrap">
+                <label htmlFor="manufacture_date" className="soft-label">Manufactured date</label>
+                <input
+                  type="date"
+                  id="manufacture_date"
+                  name="manufacture_date"
+                  value={vendorData.manufacture_date?.split('T')[0] || ''}
+                  onChange={handleInputChange}
+                  className="soft-field"
+                />
+              </div>
 
-<div className='flex flex-col justify-center'>
-  <label htmlFor="expiry_date">Expire date</label>
-  <input
-    type="date"
-    id="expiry_date"
-    name="expiry_date" // Add this
-    value={vendorData.expiry_date?.split('T')[0] || ''} // Format ISO date
-    onChange={handleInputChange}
-    className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
-  />
-</div>
+              <div className="soft-field-wrap">
+                <label htmlFor="expiry_date" className="soft-label">Expire date</label>
+                <input
+                  type="date"
+                  id="expiry_date"
+                  name="expiry_date"
+                  value={vendorData.expiry_date?.split('T')[0] || ''}
+                  onChange={handleInputChange}
+                  className="soft-field"
+                />
+              </div>
             </div>
           </div>
-          <div className="flex justify-end my-4">
-            <button type="submit" className="bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] text-white p-2">
+          <div className="soft-actions">
+            <button type="submit" className="soft-submit">
               Update Purchase
             </button>
           </div>

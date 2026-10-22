@@ -75,22 +75,22 @@ function UpdateSalary() {
   };
 
   return (
-    <div className="min-h-screen text-black dark:text-white">
-      <div className="py-10 sm:py-20 p-4 sm:p-6">
-        <form onSubmit={handleSubmit} className="bg-white  text-black dark:text-black my-2 p-4 sm:p-8 rounded-[8px] w-full max-w-4xl mx-auto">
+    <div className="soft-page">
+      <div className="p-4 sm:p-6 max-w-6xl">
+        <form onSubmit={handleSubmit} className="soft-card max-w-4xl mx-auto">
         <Link to={'/Dashboard/Employees/salaries'}>
         <h1 className="text-3xl font-bold"><IoIosArrowRoundBack />
         </h1>
         </Link>
-          <h1 className="font-semibold text-lg sm:text-xl mb-4">Update Salary</h1>
+          <h1 className="soft-title mb-4">Update Salary</h1>
           <div className="formdiv py-4 flex flex-col gap-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               <div className="flex flex-col">
                 <label htmlFor="paid_amount" className="mb-2">Paid Amount</label>
                 <input
                   type="text"
                   name="paid_amount"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={SalaryData.paid_amount}
                   onChange={handleInputChange}
                 />
@@ -100,7 +100,7 @@ function UpdateSalary() {
                 <input
                   type="text"
                   name="date"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={SalaryData.date}
                   onChange={handleInputChange}
                 />
@@ -110,7 +110,7 @@ function UpdateSalary() {
                 <input
                   type="tel"
                   name="employee_id"
-                  className="border border-gray-400 rounded-[10px] p-2 bg-gray-200 cursor-not-allowed"
+                  className="soft-field cursor-not-allowed"
                   value={SalaryData.employee_id}
                   readOnly
                 />
@@ -120,7 +120,7 @@ function UpdateSalary() {
                 <input
                   type="tel"
                   name="salary_id"
-                  className="border border-gray-400 rounded-[10px] p-2 bg-gray-200 cursor-not-allowed"
+                  className="soft-field cursor-not-allowed"
                   value={SalaryData.salary_id}
                   readOnly
                 />
@@ -128,7 +128,7 @@ function UpdateSalary() {
             </div>
           </div>
           <div className="flex justify-end mt-6">
-            <button type="submit" className="bg-[#605BFF] rounded-[8px] shadow-md flex justify-center w-full sm:w-auto text-white px-4 py-2">
+            <button type="submit" className="soft-submit">
               Update Salary
             </button>
           </div>

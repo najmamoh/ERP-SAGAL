@@ -42,3 +42,48 @@ box-shadow: white;
     box-shadow: 20px 0 10px -10px #025f66;
 
 }
+
+@layer components {
+  .soft-page {
+    @apply min-h-screen text-slate-800 dark:text-white p-4 sm:p-6;
+  }
+  .soft-field {
+    @apply w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 placeholder-slate-400 outline-none transition duration-200 focus:bg-white focus:border-indigo-300 focus:ring-4 focus:ring-indigo-100 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-100 dark:placeholder-slate-500 dark:focus:bg-slate-800 dark:focus:border-indigo-500 dark:focus:ring-indigo-500/20 dark:disabled:bg-slate-800 dark:disabled:text-slate-400;
+  }
+  .soft-label {
+    @apply text-sm font-medium text-slate-600 dark:text-slate-300;
+  }
+  .soft-card {
+    @apply bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 my-2 p-5 sm:p-7 rounded-2xl w-full flex flex-col border border-slate-200/80 dark:border-slate-800 shadow-sm;
+  }
+  .soft-card label {
+    @apply text-sm font-medium text-slate-600 dark:text-slate-300 mb-0;
+  }
+  .soft-field-wrap {
+    @apply flex flex-col gap-1.5;
+  }
+  .soft-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5;
+  }
+  .soft-actions {
+    @apply flex justify-end mt-6 pt-5 border-t border-slate-100 dark:border-slate-800;
+  }
+  .soft-submit {
+    @apply inline-flex items-center justify-center rounded-xl bg-[#605BFF] hover:bg-[#514cdb] shadow-sm shadow-indigo-200 px-6 py-2.5 text-sm font-semibold text-white transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .soft-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition duration-200 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700;
+  }
+  .soft-btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 transition duration-200 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800;
+  }
+  .soft-title {
+    @apply text-xl font-semibold tracking-tight text-slate-800 dark:text-white;
+  }
+  .soft-subtitle {
+    @apply mt-1 text-sm text-slate-500 dark:text-slate-400;
+  }
+  .soft-info {
+    @apply mb-4 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 text-sm text-indigo-800 dark:text-indigo-200;
+  }
+}

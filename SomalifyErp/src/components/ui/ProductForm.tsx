@@ -235,7 +235,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
               />
               <button
                 type="button"
-                className="px-4 py-2 flex gap-2 items-center bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                className="soft-btn-ghost"
                 onClick={handleAddNewInput}
               >
                 <GoPlus className="text-lg" />
@@ -253,7 +253,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                 transition={{ delay: index * 0.1 }}
                 className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4"
               >
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                   <div className="flex flex-col">
                     <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Product Code
@@ -261,7 +261,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                     <div className="flex gap-2">
                       <input
                         type="text"
-                        className="flex-1 border border-gray-300 dark:border-gray-600 rounded-md p-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="soft-field flex-1"
                         value={input.product_code}
                         onChange={(e) => handleInputChange(index, 'product_code', e.target.value)}
                         placeholder="Scan or enter code"
@@ -269,7 +269,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                       />
                       <button
                         type="button"
-                        className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                        className="soft-btn-secondary"
                         onClick={() => {
                           setCurrentScanIndex(index);
                           setIsScannerOpen(true);
@@ -286,7 +286,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                     </label>
                     <input
                       type="text"
-                      className="border border-gray-300 dark:border-gray-600 rounded-md p-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="soft-field"
                       value={input.product_name}
                       onChange={(e) => handleInputChange(index, 'product_name', e.target.value)}
                       required
@@ -301,7 +301,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                       type="number"
                       step="0.01"
                       min="0"
-                      className="border border-gray-300 dark:border-gray-600 rounded-md p-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="soft-field"
                       value={input.product_price}
                       onChange={(e) => handleInputChange(index, 'product_price', e.target.value)}
                       placeholder="Selling price"
@@ -315,7 +315,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                     </label>
                     <input
                       type="number"
-                      className="border border-gray-300 dark:border-gray-600 rounded-md p-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="soft-field"
                       value={input.product_alert_number}
                       onChange={(e) => handleInputChange(index, 'product_alert_number', Number(e.target.value))}
                       required
@@ -328,7 +328,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                     </label>
                     <input
                       type="text"
-                      className="border border-gray-300 dark:border-gray-600 rounded-md p-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="soft-field"
                       value={input.category}
                       onChange={(e) => handleInputChange(index, 'category', e.target.value)}
                       placeholder="e.g. Electronics, Food"
@@ -340,7 +340,7 @@ export function ProductForm({ mode, productId, onSuccess }: ProductFormProps) {
                       Description
                     </label>
                     <textarea
-                      className="border border-gray-300 dark:border-gray-600 rounded-md p-2.5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[80px]"
+                      className="soft-field min-h-[80px]"
                       value={input.description}
                       onChange={(e) => handleInputChange(index, 'description', e.target.value)}
                       placeholder="Product description (optional)"

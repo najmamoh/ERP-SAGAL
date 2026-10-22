@@ -91,16 +91,16 @@
 //         </div>
 //       </div>
 //       <div>
-//         <h1 className="font-semibold text-lg dark:text-white">Update Sale</h1>
-//         <form onSubmit={handleSubmit} className="bg-white text-black my-2 p-4 rounded-[8px] w-full flex flex-col">
+//         <h1 className="soft-title">Update Sale</h1>
+//         <form onSubmit={handleSubmit} className="soft-card">
 //           <div className="formdiv flex flex-col gap-4">
-//             <div className="grid grid-cols-4 gap-2">
+//             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
 //             <div className="flex flex-col">
 //                 <label htmlFor="product">Product Name</label>
 //                 <input
 //                   type="text"
 //                   name="product"
-//                   className="border border-gray-400 rounded-[10px] p-2"
+//                   className="soft-field"
 //                   value={vendorData.product}
 //                   disabled
 //                 />
@@ -110,7 +110,7 @@
 //                 <input
 //                   type="text"
 //                   name="customerName"
-//                   className="border border-gray-400 rounded-[10px] p-2"
+//                   className="soft-field"
 //                   value={vendorData.customerName}
 //                   disabled
 //                 />
@@ -120,7 +120,7 @@
 //                 <input
 //                   type="text"
 //                   name="sale_qty"
-//                   className="border border-gray-400 rounded-[10px] p-2"
+//                   className="soft-field"
 //                   value={vendorData.sale_qty}
 //                   onChange={handleInputChange}
 //                 />
@@ -130,7 +130,7 @@
 //                 <input
 //                   type="text"
 //                   name="item_price"
-//                   className="border border-gray-400 rounded-[10px] p-2"
+//                   className="soft-field"
 //                   value={vendorData.item_price}
 //                   disabled
 //                   onChange={handleInputChange}
@@ -141,7 +141,7 @@
 //                 <input
 //                   type="tel"
 //                   name="sale_discount"
-//                   className="border border-gray-400 rounded-[10px] p-2"
+//                   className="soft-field"
 //                   value={vendorData.sale_discount}
 //                   onChange={handleInputChange}
 //                 />
@@ -151,7 +151,7 @@
 //                 <input
 //                   type="text"
 //                   name="received_amount"
-//                   className="border border-gray-400 rounded-[10px] p-2"
+//                   className="soft-field"
 //                   value={vendorData.received_amount}
 //                   onChange={handleInputChange}
 //                 />
@@ -159,7 +159,7 @@
 //             </div>
 //           </div>
 //           <div className="flex justify-end my-4">
-//             <button type='submit' className='bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] text-white p-2'>Update Sale</button>
+//             <button type='submit' className='soft-submit'>Update Sale</button>
 //           </div>
 //         </form>
 //       </div>
@@ -252,18 +252,20 @@ function UpdateSale() {
   };
 
   return (
-    <div className="min-h-screen text-black dark:text-white">
-      <div className="p-4 sm:p-6">
-        <h1 className="font-semibold text-lg dark:text-white">Update Sale</h1>
-        <form onSubmit={handleSubmit} className="bg-white text-black dark:text-black my-2 p-4 rounded-[8px] w-full flex flex-col">
+    <div className="soft-page">
+      <div className="mb-4">
+        <h1 className="soft-title">Update Sale</h1>
+        <p className="soft-subtitle">Edit this sale, then save your changes.</p>
+      </div>
+        <form onSubmit={handleSubmit} className="soft-card">
           <div className="formdiv flex flex-col gap-4">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               <div className="flex flex-col">
                 <label htmlFor="product">Product Name</label>
                 <input
                   type="text"
                   name="product"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.product}
                   disabled
                 />
@@ -273,7 +275,7 @@ function UpdateSale() {
                 <input
                   type="text"
                   name="customerName"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.customerName}
                   disabled
                 />
@@ -283,7 +285,7 @@ function UpdateSale() {
                 <input
                   type="number"
                   name="sale_qty"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.sale_qty}
                   onChange={handleInputChange}
                   min="0.01"
@@ -295,7 +297,7 @@ function UpdateSale() {
                 <input
                   type="text"
                   name="item_price"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.item_price}
                   disabled
                 />
@@ -305,7 +307,7 @@ function UpdateSale() {
                 <input
                   type="tel"
                   name="sale_discount"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.sale_discount}
                   onChange={handleInputChange}
                 />
@@ -315,20 +317,17 @@ function UpdateSale() {
                 <input
                   type="text"
                   name="received_amount"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={vendorData.received_amount}
                   onChange={handleInputChange}
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-end my-4">
-            <button type="submit" className="bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] text-white p-2">
-              Update Sale
-            </button>
+          <div className="soft-actions">
+            <button type="submit" className="soft-submit">Update Sale</button>
           </div>
         </form>
-      </div>
     </div>
   );
 }

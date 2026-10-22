@@ -71,18 +71,20 @@ function UpdateBank() {
   };
 
   return (
-    <div className="min-h-screen text-black dark:text-white">
-      <div className="p-4 sm:p-6">
-        <h1 className="font-semibold text-lg dark:text-white">Update Bank</h1>
-        <form onSubmit={handleSubmit} className="bg-white text-black my-2 p-4 rounded-[8px] w-full flex flex-col">
+    <div className="soft-page">
+      <div className="mb-4">
+        <h1 className="soft-title">Update Bank</h1>
+        <p className="soft-subtitle">Edit bank details, then save.</p>
+      </div>
+        <form onSubmit={handleSubmit} className="soft-card">
           <div className="formdiv flex flex-col gap-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               <div className="flex flex-col">
                 <label htmlFor="bank_name">Bank Name</label>
                 <input
                   type="text"
                   name="bank_name"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={bankData.bank_name}
                   onChange={handleInputChange}
                 />
@@ -92,7 +94,7 @@ function UpdateBank() {
                 <input
                   type="number"
                   name="amount"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={bankData.amount}
                   onChange={handleInputChange}
                 />
@@ -102,7 +104,7 @@ function UpdateBank() {
                 <input
                   type="number"
                   name="sale_id"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={bankData.sale_id || ''}
                   onChange={handleInputChange}
                   placeholder="Leave empty if not linked to sale"
@@ -110,11 +112,10 @@ function UpdateBank() {
               </div>
             </div>
           </div>
-          <div className="flex justify-end my-4">
-            <button type='submit' className='bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] text-white p-2'>Update Bank</button>
+          <div className="soft-actions">
+            <button type='submit' className='soft-submit'>Update Bank</button>
           </div>
         </form>
-      </div>
     </div>
   );
 }

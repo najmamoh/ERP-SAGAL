@@ -269,7 +269,7 @@ export const UserForm: React.FC<UserFormProps> = ({
               required
               value={full_name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="soft-field"
               placeholder="Enter full name"
             />
           </div>
@@ -284,7 +284,7 @@ export const UserForm: React.FC<UserFormProps> = ({
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="soft-field"
               placeholder="Enter email"
             />
           </div>
@@ -299,7 +299,7 @@ export const UserForm: React.FC<UserFormProps> = ({
               required={mode === 'create'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="soft-field"
               placeholder="Enter password"
             />
           </div>
@@ -399,7 +399,7 @@ export const UserForm: React.FC<UserFormProps> = ({
                 id="adminCompany"
                 value={selectedCompanyId}
                 onChange={(e) => setSelectedCompanyId(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none"
+                className="soft-field"
               >
                 <option value="">No Company (System Admin)</option>
                 {allCompaniesState.data?.map((company) => (
@@ -474,7 +474,7 @@ export const UserForm: React.FC<UserFormProps> = ({
             disabled={isLoading}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-6 py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="soft-submit"
           >
             {isLoading 
               ? 'Processing...' 

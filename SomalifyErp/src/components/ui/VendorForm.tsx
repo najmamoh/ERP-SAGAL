@@ -168,7 +168,7 @@ export function VendorForm({ mode, vendorId, onSuccess }: VendorFormProps) {
           <div className="flex flex-wrap gap-3 justify-end mb-5">
             <button
               type="button"
-              className="px-4 py-2.5 gap-2 flex items-center text-white rounded bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 transition-all text-sm font-medium"
+              className="soft-btn-secondary"
               onClick={() => document.getElementById('excel-import')?.click()}
             >
               <CiImport className="text-lg" />
@@ -214,7 +214,7 @@ export function VendorForm({ mode, vendorId, onSuccess }: VendorFormProps) {
                     </label>
                     <input
                       type={type}
-                      className="w-full rounded border text-sm border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700/90 px-4 py-2.5 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.15)] transition-all"
+                      className="soft-field"
                       placeholder={placeholder}
                       value={input[key as keyof typeof input]}
                       onChange={(e) => handleInputChange(index, key, e.target.value)}
@@ -244,7 +244,7 @@ export function VendorForm({ mode, vendorId, onSuccess }: VendorFormProps) {
         <div className="flex justify-end gap-3">
           <button
             type="submit"
-            className="px-8 py-3 text-sm rounded font-semibold text-white bg-gradient-to-r from-slate-600 via-blue-600 to-indigo-600 hover:from-slate-500 hover:via-blue-500 hover:to-indigo-500 shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="soft-submit"
           >
             {mode === 'create' ? 'Create Vendor' : 'Update Vendor'}
           </button>

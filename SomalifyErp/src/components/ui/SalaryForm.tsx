@@ -115,7 +115,7 @@ export function SalaryForm({ mode, salaryId, onSuccess, companyId }: SalaryFormP
           onChange={(e) => setEmployee(e.target.value)}
           required
           disabled={mode === 'update'}
-          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+          className="soft-field"
         >
           <option value="">Select an employee</option>
           {AllEmployees?.data?.map((emp) => (
@@ -143,7 +143,7 @@ export function SalaryForm({ mode, salaryId, onSuccess, companyId }: SalaryFormP
             onChange={(e) => setPaidAmount(e.target.value)}
             required
             placeholder="0.00"
-            className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+            className="soft-field pl-8"
           />
         </div>
         {employee_id && AllEmployees?.data?.find((e) => e.employee_id === +employee_id)?.salary_amount && (
@@ -166,7 +166,7 @@ export function SalaryForm({ mode, salaryId, onSuccess, companyId }: SalaryFormP
           onChange={(e) => setDate(e.target.value)}
           required
           max={new Date().toISOString().split('T')[0]}
-          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+          className="soft-field"
         />
       </div>
 

@@ -346,7 +346,7 @@ export function SalesForm({ onSuccess }: SalesFormProps) {
               transition={{ delay: index * 0.1 }}
               className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 <div className="flex flex-col">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Select Product
@@ -573,7 +573,7 @@ export function SalesForm({ onSuccess }: SalesFormProps) {
         <div className="flex justify-end gap-3">
           <button
             type="submit"
-            className="px-6 py-2.5 bg-gradient-to-r from-slate-600 via-blue-600 to-indigo-600 text-white rounded-[5px] font-semibold shadow-lg hover:shadow-xl transition-all"
+            className="soft-submit"
           >
             Create Sale
           </button>

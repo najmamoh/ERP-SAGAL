@@ -119,27 +119,20 @@ function UpdateUser() {
     }
   };
 
-  const inputBase =
-    'w-full px-4 py-3 rounded-xl bg-indigo-50/50 dark:bg-slate-800/50 border border-indigo-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-400/50 focus:border-indigo-300 transition-all duration-200';
-  const labelBase = 'text-sm font-medium text-slate-600 dark:text-slate-400 mb-1.5 block';
+  const inputBase = 'soft-field';
+  const labelBase = 'soft-label';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-violet-50/40 dark:from-slate-900 dark:via-indigo-950/20 dark:to-slate-900">
+    <div className="soft-page">
       <div className="w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8 rounded-2xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-indigo-100/80 dark:border-slate-700/80 shadow-lg shadow-indigo-100/50 dark:shadow-slate-900/50 p-6">
+        <div className="soft-card mb-6">
           <div className="flex items-center gap-4">
-            <div
-              className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${
-                isMainUserUpdate
-                  ? 'bg-gradient-to-br from-purple-500 to-pink-600 shadow-purple-200/60'
-                  : 'bg-gradient-to-br from-indigo-400 to-violet-500 shadow-indigo-200/60'
-              }`}
-            >
-              <FiUser className="text-2xl text-white" />
+            <div className="w-11 h-11 rounded-xl bg-indigo-50 text-[#605BFF] dark:bg-indigo-900/30 dark:text-indigo-300 flex items-center justify-center">
+              <FiUser className="text-xl" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+              <h1 className="soft-title">
                 {isMainUserUpdate ? 'Update Main User' : 'Update Company User'}
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
@@ -158,9 +151,9 @@ function UpdateUser() {
         {/* Update Form */}
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-indigo-100/80 dark:border-slate-700/80 shadow-xl shadow-indigo-100/30 dark:shadow-slate-900/30 overflow-hidden"
+          className="soft-card"
         >
-          <div className="p-6 sm:p-8">
+          <div>
             <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
               User Information
             </h2>
@@ -220,7 +213,7 @@ function UpdateUser() {
             <div className="mt-6 flex justify-end">
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl font-semibold text-white bg-gradient-to-r from-[#605BFF] to-[#3a3799] shadow-[0_4px_23px_0_rgba(96,91,255,0.5)] hover:shadow-[0_6px_28px_0_rgba(96,91,255,0.6)] transition-all duration-200 flex items-center gap-2"
+                className="soft-submit"
               >
                 <FiSave className="text-lg" />
                 Save Changes
@@ -231,7 +224,7 @@ function UpdateUser() {
 
         {/* Role Assignment Section */}
         {isAdminDashboard && id && (
-          <div className="mt-6 rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm border border-indigo-100/80 dark:border-slate-700/80 shadow-xl shadow-indigo-100/30 dark:shadow-slate-900/30 overflow-hidden">
+          <div className="mt-6 soft-card">
             <div className="p-6 sm:p-8">
               <div className="flex items-center gap-2 mb-4">
                 <HiOutlineShieldCheck className="w-5 h-5 text-indigo-600" />

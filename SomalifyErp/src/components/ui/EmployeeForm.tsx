@@ -148,7 +148,7 @@ export function EmployeeForm({ onSuccess }: EmployeeFormProps) {
           <select
             value={selectedCompanyId}
             onChange={(e) => setSelectedCompanyId(e.target.value)}
-            className="w-full min-w-[280px] px-4 py-3 text-base rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-400 focus:border-blue-400 outline-none cursor-pointer"
+            className="soft-field cursor-pointer"
             required
             disabled={AllCompaniesState.isLoading}
           >
@@ -171,7 +171,7 @@ export function EmployeeForm({ onSuccess }: EmployeeFormProps) {
         <div className="flex flex-wrap gap-3 justify-end mb-5">
           <button
             type="button"
-            className="px-4 py-2.5 gap-2 flex items-center text-white rounded bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/40 transition-all text-sm font-medium"
+            className="soft-btn-secondary"
             onClick={() => document.getElementById('excel-import-employee')?.click()}
           >
             <CiImport className="text-lg" />
@@ -216,7 +216,7 @@ export function EmployeeForm({ onSuccess }: EmployeeFormProps) {
                     </label>
                     <input
                       type={type}
-                      className="w-full min-w-[140px] rounded-lg border text-base border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700/90 px-4 py-3 text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400/40 focus:border-blue-400 focus:shadow-[0_0_0_3px_rgba(59,130,246,0.15)] transition-all"
+                      className="soft-field"
                       placeholder={placeholder}
                       value={input[key as keyof typeof input]}
                       onChange={(e) => handleInputChange(index, key, e.target.value)}
@@ -246,7 +246,7 @@ export function EmployeeForm({ onSuccess }: EmployeeFormProps) {
         <div className="flex justify-end gap-3">
           <button
             type="submit"
-            className="px-8 py-3 text-sm rounded font-semibold text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-xl shadow-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="soft-submit"
           >
             Create Employee
           </button>

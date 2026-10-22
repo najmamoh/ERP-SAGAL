@@ -289,7 +289,7 @@ export function CompanyForm({ mode, companyId, onSuccess }: CompanyFormProps) {
         <div className="flex justify-end gap-3">
           <button
             type="submit"
-            className="px-6 py-2.5 bg-gradient-to-r from-slate-600 via-blue-600 to-indigo-600 text-white rounded-[5px] font-semibold shadow-lg hover:shadow-xl transition-all"
+            className="soft-submit"
           >
             {mode === 'create' ? 'Create Company' : 'Update Company'}
           </button>

@@ -119,16 +119,16 @@ export function CreateEmployees() {
   },[navigate])
 
   return (
-    <div className="min-h-screen p-4 sm:p-6">
+    <div className="soft-page">
       <div>
-        <form onSubmit={handleSubmit} className="bg-white dark:text-black my-2 p-4 rounded-[8px] w-full flex flex-col">
+        <form onSubmit={handleSubmit} className="soft-card">
         <Link to={'/Dashboard/Employees'}>
         <h1 className="text-3xl dark:text-black font-bold"><IoIosArrowRoundBack />
         </h1>
         </Link>
-        <h1 className="font-semibold dark:text-black text-lg">Create Employees.</h1>
+        <h1 className="soft-title">Create Employees.</h1>
           <div className="flex gap-2 justify-end px-4">
-            <button type="button" className="bg-[#008CC8] px-2 gap-2 flex items-center text-white rounded-xl" onClick={() => document.getElementById('excel-import')!.click()}>
+            <button type="button" className="soft-btn-secondary" onClick={() => document.getElementById('excel-import')!.click()}>
               <span className="text-xl"> <CiImport /> </span> Import Excel
             </button>
             <input
@@ -138,19 +138,19 @@ export function CreateEmployees() {
               style={{ display: 'none' }}
               onChange={handleFileChange}
             />
-            <button type="button" className="p-2 flex gap-2 items-center" onClick={handleAddNewInput}>
+            <button type="button" className="soft-btn-ghost" onClick={handleAddNewInput}>
               <span className="bg-[#E1E0FF] text-xl p-2 rounded-full"><GoPlus /></span>Add new
             </button>
           </div>
           {formInputs.map((input, index) => (
             <div key={index}>
               <div className="formdiv flex flex-col gap-4">
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
                   <div className="flex flex-col">
                     <label htmlFor="">Full name</label>
                     <input
                       type="text"
-                      className="border border-gray-400 rounded-[10px] p-2"
+                      className="soft-field"
                       value={input.employee_name}
                       onChange={(e) => handleInputChange(index, 'employee_name', e.target.value)}
                     />
@@ -159,7 +159,7 @@ export function CreateEmployees() {
                     <label htmlFor="">Phone Number</label>
                     <input
                       type="number"
-                      className="border border-gray-400 rounded-[10px] p-2"
+                      className="soft-field"
                       value={input.employee_phone}
                       onChange={(e) => handleInputChange(index, 'employee_phone', e.target.value)}
                     />
@@ -168,7 +168,7 @@ export function CreateEmployees() {
                     <label htmlFor="">Adress</label>
                     <input
                       type="text"
-                      className="border border-gray-400 rounded-[10px] p-2"
+                      className="soft-field"
                       value={input.employee_address}
                       onChange={(e) => handleInputChange(index, 'employee_address', e.target.value)}
                     />
@@ -177,7 +177,7 @@ export function CreateEmployees() {
                     <label htmlFor="">Salary</label>
                     <input
                       type="number"
-                      className="border border-gray-400 rounded-[10px] p-2"
+                      className="soft-field"
                       value={input.salary_amount}
                       onChange={(e) => handleInputChange(index, 'salary_amount', e.target.value)}
                     />
@@ -196,7 +196,7 @@ export function CreateEmployees() {
             </div>
           ))}
           <div className="div flex justify-end my-4">
-            <button type='submit' className='bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] text-white p-2'>create Employee</button>
+            <button type='submit' className='soft-submit'>create Employee</button>
           </div>
         </form>
       </div>

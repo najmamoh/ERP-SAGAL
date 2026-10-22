@@ -81,18 +81,20 @@ const params = useParams();
   };
 
   return (
-    <div className="min-h-screen text-black dark:text-white">
-      <div className="p-4 sm:p-6">
-        <h1 className="font-semibold text-lg dark:text-white">Update Product</h1>
-        <form onSubmit={handleSubmit} className="bg-white text-black my-2 p-4 rounded-[8px] w-full flex flex-col">
+    <div className="soft-page">
+      <div className="mb-4">
+        <h1 className="soft-title">Update Product</h1>
+        <p className="soft-subtitle">Edit product details, then save.</p>
+      </div>
+        <form onSubmit={handleSubmit} className="soft-card">
           <div className="formdiv flex flex-col gap-4">
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               <div className="flex flex-col">
                 <label htmlFor="product_name">Product name</label>
                 <input
                   type="text"
                   name="product_name"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={ProductData.product_name}
                   onChange={handleInputChange}
                 />
@@ -102,7 +104,7 @@ const params = useParams();
                 <input
                   type="text"
                   name="product_code"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={ProductData.product_code}
                   onChange={handleInputChange}
                 />
@@ -112,7 +114,7 @@ const params = useParams();
                 <input
                   type="number"
                   name="product_price"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={ProductData.product_price}
                   onChange={handleInputChange}
                 />
@@ -124,7 +126,7 @@ const params = useParams();
                   step="0.01"
                   min="0"
                   name="product_cost"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={ProductData.product_cost}
                   onChange={handleInputChange}
                   placeholder="Used in reports when no purchase cost"
@@ -135,7 +137,7 @@ const params = useParams();
                 <input
                   type="number"
                   name="product_alert_number"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={ProductData.product_alert_number}
                   onChange={handleInputChange}
                 />
@@ -145,7 +147,7 @@ const params = useParams();
                 <input
                   type="text"
                   name="category"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={ProductData.category}
                   onChange={handleInputChange}
                   placeholder="e.g. Electronics, Food"
@@ -155,7 +157,7 @@ const params = useParams();
                 <label htmlFor="description">Description</label>
                 <textarea
                   name="description"
-                  className="border border-gray-400 rounded-[10px] p-2 min-h-[80px]"
+                  className="soft-field min-h-[80px]"
                   value={ProductData.description}
                   onChange={handleInputChange}
                   placeholder="Product description (optional)"
@@ -164,11 +166,10 @@ const params = useParams();
               </div>
             </div>
           </div>
-          <div className="flex justify-end my-4">
-            <button type='submit' className='bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center min-w-[180px] w-[14%] text-white p-2'>Update Product</button>
+          <div className="soft-actions">
+            <button type='submit' className='soft-submit'>Update Product</button>
           </div>
         </form>
-      </div>
     </div>
   );
 }

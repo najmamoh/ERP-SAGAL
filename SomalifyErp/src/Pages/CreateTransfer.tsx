@@ -133,10 +133,10 @@ export function CreateTransfer() {
 
   /* ================= UI ================= */
   return (
-    <div className="min-h-screen p-4 bg-gray-50">
+    <div className="soft-page">
       <h1 className="font-semibold text-lg mb-4">Create Transfer</h1>
 
-      <form onSubmit={handleSubmit} className="bg-white p-4 rounded-lg shadow-sm">
+      <form onSubmit={handleSubmit} className="soft-card">
         <div className="flex gap-2 justify-end mb-4">
           <button
             type="button"
@@ -154,11 +154,11 @@ export function CreateTransfer() {
 
         {formInputs.map((input, index) => (
           <div key={index} className="mt-4 border-b pb-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               <div>
                 <label>Payment Method</label>
                 <select
-                  className="border rounded-lg p-2 w-full"
+                  className="soft-field"
                   value={input.payment_method}
                   onChange={(e) => handleInputChange(index, 'payment_method', e.target.value)}
                 >
@@ -172,7 +172,7 @@ export function CreateTransfer() {
                 <label>Amount</label>
                 <input
                   type="number"
-                  className="border rounded-lg p-2 w-full"
+                  className="soft-field"
                   value={input.amount}
                   onChange={(e) => handleInputChange(index, 'amount', e.target.value)}
                 />
@@ -181,7 +181,7 @@ export function CreateTransfer() {
               <div>
                 <label>Currency</label>
                 <select
-                  className="border rounded-lg p-2 w-full"
+                  className="soft-field"
                   value={input.currency_type}
                   onChange={(e) => handleInputChange(index, 'currency_type', e.target.value)}
                 >
@@ -197,7 +197,7 @@ export function CreateTransfer() {
                   <p className="text-gray-500">Loading...</p>
                 ) : (
                   <select
-                    className="border rounded-lg p-2 w-full"
+                    className="soft-field"
                     value={input.treasury_id}
                     onChange={(e) => handleInputChange(index, 'treasury_id', e.target.value)}
                   >
@@ -223,7 +223,7 @@ export function CreateTransfer() {
         ))}
 
         <div className="flex justify-end mt-4">
-          <button type="submit" className="bg-[#605BFF] text-white px-6 py-2 rounded-lg">
+          <button type="submit" className="soft-submit">
             Create Transfer
           </button>
         </div>

@@ -139,16 +139,19 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
   }, [createPurchaseState.isLoading, createPurchaseState.isSuccess, createPurchaseState.isError, onSuccess, dispatch]);
   
   return (
-    <div className='w-full'>
-      <div className='bg-white dark:bg-gray-900 text-black dark:text-white p-6'>
-        {isAdminDashboard && (
-          <div className='mb-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-sm text-blue-800 dark:text-blue-200'>
-            <strong>Flow:</strong> Items go to the main warehouse. Then go to <strong>Warehouse</strong> and transfer to company stores. Company users will receive them into their store and can then sell.
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className='flex flex-col gap-4'>
-        <div className='flex flex-col justify-center'>
-      <label htmlFor="product">Select Product</label>
+    <div className='soft-page'>
+      <div className='mb-4'>
+        <h1 className='soft-title'>Create Purchase</h1>
+        <p className='soft-subtitle'>Add a new purchase batch to inventory.</p>
+      </div>
+      {isAdminDashboard && (
+        <div className='soft-info'>
+          <strong>Flow:</strong> Items go to the main warehouse. Then go to <strong>Warehouse</strong> and transfer to company stores. Company users will receive them into their store and can then sell.
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className='soft-card gap-5'>
+        <div className='soft-field-wrap'>
+      <label htmlFor="product" className='soft-label'>Select Product</label>
       
       {/* Search Input */}
       <input
@@ -156,7 +159,7 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
         placeholder="Search products..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+        className="soft-field"
       />
 
       {/* Product Dropdown */}
@@ -164,7 +167,7 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
         id="product"
         value={product_id}
         onChange={(e) => setProductId(e.target.value)}
-        className="bg-[#F7F7F8] p-2 rounded-[8px] text-gray-400 my-2"
+        className="soft-field"
       >
         <option>Select Products</option>
         {AllProductsState?.data?.map((product) => (
@@ -180,7 +183,7 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
           type="button"
           onClick={() => setProductPage(p => Math.max(1, p - 1))}
           disabled={productPage === 1}
-          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          className="px-4 py-2 rounded-xl bg-slate-100 text-sm font-medium text-slate-700 disabled:opacity-40"
         >
           Previous
         </button>
@@ -191,22 +194,22 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
           type="button"
           onClick={() => setProductPage(p => p + 1)}
           disabled={!AllProductsState?.hasMore}
-          className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50"
+          className="px-4 py-2 rounded-xl bg-slate-100 text-sm font-medium text-slate-700 disabled:opacity-40"
         >
           Next
         </button>
       </div>
     </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="vendor">Select Vendor</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="vendor" className='soft-label'>Select Vendor</label>
             <input
         placeholder="Search vendors..."
         value={vendorSearch}
         onChange={e => setVendorSearch(e.target.value)}
-        className='bg-[#F7F7F8] p-2 rounded-[8px] my-2'
+        className='soft-field'
       />
       <select value={vendor_id}
-        onChange={(e) => setVendor(e.target.value)}  className="bg-[#F7F7F8] p-2 rounded-[8px] text-gray-400 my-2">
+        onChange={(e) => setVendor(e.target.value)}  className="soft-field">
         <option>Select Vendor</option>
         {AllVendorState.data.map(v => (
           <option key={v.vendor_id} value={v.vendor_id}>
@@ -227,19 +230,19 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
       </button>
       </div>
           </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="container_number">Container number</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="container_number" className='soft-label'>Container number</label>
             <input
               type="text"
               id="container_number"
               value={container_number}
               onChange={(e) => setContainerNumber(e.target.value)}
-              className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+              className="soft-field"
               placeholder='e.g. CNT-001'
             />
           </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="quantity">Quantity</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="quantity" className='soft-label'>Quantity</label>
             <input
               type="number"
               id="quantity"
@@ -247,62 +250,62 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
               step="any"
               value={purchase_qty}
               onChange={(e) => setQuantity(e.target.value)}
-              className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+              className="soft-field"
               placeholder='Enter quantity (e.g. 0.3, 2.5)'
             />
           </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="cost">Cost Per item</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="cost" className='soft-label'>Cost Per item</label>
             <input
               type="number"
               id="cost"
               value={item_cost}
               onChange={(e) => setCost(e.target.value)}
-              className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+              className="soft-field"
               placeholder='Enter cost here.'
             />
           </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="discount">Discount</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="discount" className='soft-label'>Discount</label>
             <input
               type="number"
               id="discount"
               value={purchase_discount}
               onChange={(e) => setDiscount(e.target.value)}
-              className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+              className="soft-field"
               placeholder='Enter discount here.'
             />
           </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="paid">Paid</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="paid" className='soft-label'>Paid</label>
             <input
               type="number"
               id="paid"
               value={paid_amount}
               onChange={(e) => setPaid(e.target.value)}
-              className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+              className="soft-field"
               placeholder='Quantity × Cost − Discount (editable)'
             />
           </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="manufacture_date">Manufactured date</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="manufacture_date" className='soft-label'>Manufactured date</label>
             <input
               type="date"
               id="manufacture_date"
               value={manufacture_date}
               onChange={(e) => setManufacture(e.target.value)}
-              className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+              className="soft-field"
               placeholder='Enter manufactured date here.'
             />
           </div>
-          <div className='flex flex-col justify-center'>
-            <label htmlFor="expiry_date">Expire date</label>
+          <div className='soft-field-wrap'>
+            <label htmlFor="expiry_date" className='soft-label'>Expire date</label>
             <input
               type="date"
               id="expiry_date"
               value={expiry_date}
               onChange={(e) => setExpire(e.target.value)}
-              className="bg-[#F7F7F8] p-2 rounded-[8px] my-2"
+              className="soft-field"
               placeholder='Enter expire date here.'
             />
           </div>
@@ -318,11 +321,12 @@ function CreatePurchase({ onSuccess }: CreatePurchaseProps) {
               Store - Send directly to company store (if unchecked, products will go to warehouse first)
             </label>
           </div>
-          <button type='submit' className='p-2 px-4 my-4 max-w-[480px] m-auto bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center items-center text-white'>
-            Create purchase
-          </button>
+          <div className='soft-actions'>
+            <button type='submit' className='soft-submit'>
+              Create purchase
+            </button>
+          </div>
         </form>
-      </div>
     </div>
   );
 }

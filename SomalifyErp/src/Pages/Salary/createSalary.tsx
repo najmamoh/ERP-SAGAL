@@ -59,7 +59,7 @@ function CreateSalary() {
   }, []);
 
   return (
-    <div className='min-h-screen w-full bg-gradient-to-br from-slate-50 via-teal-50/30 to-emerald-50/20 dark:from-gray-900 dark:via-slate-900 dark:to-gray-800'>
+    <div className='soft-page'>
       <div className='w-full px-4 md:px-6 lg:px-8 py-6 max-w-[900px] mx-auto'>
         {/* Header Section */}
         <motion.div
@@ -80,11 +80,11 @@ function CreateSalary() {
               </Link>
             </motion.div>
             <div>
-              <h1 className='text-3xl md:text-4xl font-bold bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent dark:from-teal-400 dark:via-emerald-400 dark:to-teal-400 flex items-center gap-3'>
-                <BsCashCoin className="text-teal-600 dark:text-teal-400" />
+              <h1 className='soft-title flex items-center gap-3'>
+                <BsCashCoin className="text-[#605BFF]" />
                 Create Salary Payment
               </h1>
-              <p className='text-gray-600 dark:text-gray-400 mt-2 text-sm md:text-base'>
+              <p className='soft-subtitle'>
                 Record a new salary payment for an employee
               </p>
             </div>
@@ -96,9 +96,9 @@ function CreateSalary() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className='bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden'
+          className='soft-card overflow-hidden'
         >
-          <form onSubmit={submitHandler} className="p-6 md:p-8">
+          <form onSubmit={submitHandler} className="space-y-1">
             <div className="space-y-6">
               {/* Employee Selection */}
               <motion.div
@@ -116,7 +116,7 @@ function CreateSalary() {
                   value={employee_id}
                   onChange={(e) => setEmployee(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:hover:border-gray-600"
+                  className="soft-field"
                 >
                   <option value="">Select an employee</option>
                   {AllEmployees?.data?.map((employee) => (
@@ -149,7 +149,7 @@ function CreateSalary() {
                     onChange={(e) => setPaidAmount(e.target.value)}
                     required
                     placeholder="0.00"
-                    className="w-full pl-8 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:hover:border-gray-600"
+                    className="soft-field pl-8"
                   />
                 </div>
                 {employee_id && AllEmployees?.data?.find(emp => emp.employee_id === +employee_id)?.salary_amount && (
@@ -177,7 +177,7 @@ function CreateSalary() {
                   onChange={(e) => setDate(e.target.value)}
                   required
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 outline-none transition-all duration-200 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:border-gray-300 dark:hover:border-gray-600"
+                  className="soft-field"
                 />
               </motion.div>
             </div>
@@ -194,7 +194,7 @@ function CreateSalary() {
                   type="button"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="px-6 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
+                  className="soft-btn-secondary"
                 >
                   Cancel
                 </motion.button>
@@ -204,7 +204,7 @@ function CreateSalary() {
                 disabled={CreateSalaryState.isLoading}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="px-8 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white rounded-xl font-semibold shadow-lg shadow-teal-500/50 hover:shadow-teal-500/70 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="soft-submit"
               >
                 {CreateSalaryState.isLoading ? (
                   <>

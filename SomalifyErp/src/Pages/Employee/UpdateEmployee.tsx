@@ -74,18 +74,18 @@ function UpdateEmployee() {
   };
 
   return (
-    <div className="min-h-screen text-black dark:text-white">
-      <div className="py-20 p-4 sm:p-6">
-        <h1 className="font-semibold text-lg dark:text-white">Update Employee</h1>
-        <form onSubmit={handleSubmit} className="bg-white text-black my-2 p-4 rounded-[8px] w-full flex flex-col">
-          <div className="formdiv py-20 flex flex-col gap-4">
-            <div className="grid grid-cols-4 gap-2">
+    <div className="soft-page">
+      <div className="p-4 sm:p-6 max-w-6xl">
+        <h1 className="soft-title">Update Employee</h1>
+        <form onSubmit={handleSubmit} className="soft-card">
+          <div className="formdiv flex flex-col gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               <div className="flex flex-col">
                 <label htmlFor="employee_name">Employee  name</label>
                 <input
                   type="text"
                   name="employee_name"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={employData.employee_name}
                   onChange={handleInputChange}
                 />
@@ -95,7 +95,7 @@ function UpdateEmployee() {
                 <input
                   type="text"
                   name="employee_address"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={employData.employee_address}
                   onChange={handleInputChange}
                 />
@@ -105,7 +105,7 @@ function UpdateEmployee() {
                 <input
                   type="tel"
                   name="employee_phone"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={employData.employee_phone}
                   onChange={handleInputChange}
                 />
@@ -115,16 +115,14 @@ function UpdateEmployee() {
                 <input
                   type="number"
                   name="salary_amount"
-                  className="border border-gray-400 rounded-[10px] p-2"
+                  className="soft-field"
                   value={employData.salary_amount}
                   onChange={handleInputChange}
                 />
               </div>
             </div>
           </div>
-          <div className="flex justify-end my-4">
-            <button type='submit' className='bg-[#605BFF] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] text-white p-2'>Update Employee</button>
-          </div>
+          <div className="soft-actions"><button type="submit" className="soft-submit">Update Employee</button></div>
         </form>
       </div>
     </div>

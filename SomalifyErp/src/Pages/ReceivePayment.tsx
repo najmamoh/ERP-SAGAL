@@ -1,7 +1,6 @@
 
 import { PayReceiveFn, resetReceiveablePayment } from '@/Redux/Slice/PayReceive'
 import { AppDispatch, RootState } from '@/Redux/Store'
-import Nav from '@/components/Nav'
 
 import  { FormEvent, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
@@ -60,27 +59,25 @@ function ReceivePayment() {
 
   
   return (
-    <div className='min-h-screen dark:text-white'>
-        <div className='p-3 flex items-center justify-between'>
-        <div className="navhome p-0 flex w-full justify-end">
-          <Nav/>
-        </div>
+    <div className='soft-page'>
+      <div className='mb-4'>
+        <h1 className='soft-title'>Receive Payment</h1>
+        <p className='soft-subtitle'>Record cash received for this receivable.</p>
       </div>
-        <div>
-            <h1 className=' dark:text-white '>Payment</h1>
-            <div className='bg-white  p-8 rounded-xl mt-7'>
-                <form action="" onSubmit={handleSubmit} className='flex flex-col text-black w-[95%] m-auto'>
-                   <label className='text-black' htmlFor="paid">Cash received (this payment)</label>
-                   <input id="paid" value={new_received_amount} onChange={(e) => setPaid(e.target.value)} type="number" step="0.01" min="0" className='border-2 rounded-xl p-2 mb-4' placeholder='e.g. 100.00'/>
-                   <label className='text-black' htmlFor="disc">Extra discount (this payment only)</label>
-                   <p className="text-xs text-gray-500 mb-1">Leave <strong>0</strong> unless you are forgiving more money now. Do not re-enter the sale&apos;s original line discount.</p>
-                   <input id="disc" type="number" step="0.01" min="0" value={new_sale_discount} onChange={(e) => setDiscount(e.target.value)} className='border-2 rounded-xl p-2' placeholder='0'/>
-                   <button type='submit' className='bg-[#605BFF] min-w-[160px] rounded-[8px] shadow-[0_4px_23.5px_rgba(96,91,255,1)] flex justify-center w-[14%] my-8 text-white p-2   '>Receive Money</button>
-                </form>
-
-            </div>
+      <form action="" onSubmit={handleSubmit} className='soft-card gap-4 max-w-xl'>
+        <div className='soft-field-wrap'>
+          <label className='soft-label' htmlFor="paid">Cash received (this payment)</label>
+          <input id="paid" value={new_received_amount} onChange={(e) => setPaid(e.target.value)} type="number" step="0.01" min="0" className='soft-field' placeholder='e.g. 100.00'/>
         </div>
-
+        <div className='soft-field-wrap'>
+          <label className='soft-label' htmlFor="disc">Extra discount (this payment only)</label>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Leave <strong>0</strong> unless you are forgiving more money now. Do not re-enter the sale&apos;s original line discount.</p>
+          <input id="disc" type="number" step="0.01" min="0" value={new_sale_discount} onChange={(e) => setDiscount(e.target.value)} className='soft-field' placeholder='0'/>
+        </div>
+        <div className='soft-actions'>
+          <button type='submit' className='soft-submit'>Receive Money</button>
+        </div>
+      </form>
     </div>
   )
 }

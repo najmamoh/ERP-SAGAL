@@ -68,12 +68,11 @@ export default function RequestWithdrawal() {
     dispatch(resetTreasuryState());
   }, [isLoading, isSuccess, isError, navigate, errorMsg, dispatch]);
 
-  const inputBase =
-    "w-full px-4 py-3 rounded-xl bg-amber-50/50 border border-amber-100 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-300 transition-all duration-200";
-  const labelBase = "text-sm font-medium text-slate-600 mb-1.5 block";
+  const inputBase = 'soft-field';
+  const labelBase = 'soft-label';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50/30 to-yellow-50/40">
+    <div className="soft-page">
       <div className="p-3 flex items-center justify-between">
         <h1 className="lg:hidden">
           <SideParsm />
@@ -86,8 +85,8 @@ export default function RequestWithdrawal() {
         <div className="mb-8 rounded-2xl bg-white/80 backdrop-blur-sm border border-amber-100/80 shadow-lg shadow-amber-100/50 p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-200/60">
-                <HiOutlineArrowDownTray className="text-2xl text-white" />
+              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-[#605BFF] dark:bg-indigo-900/30 dark:text-indigo-300 flex items-center justify-center">
+                <HiOutlineArrowDownTray className="text-xl" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-slate-800">Request Withdrawal</h1>
@@ -186,7 +185,7 @@ export default function RequestWithdrawal() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-8 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-amber-500 to-orange-500 shadow-[0_4px_23px_0_rgba(245,158,11,0.4)] hover:shadow-[0_6px_28px_0_rgba(245,158,11,0.5)] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 min-w-[200px] justify-center"
+                className="soft-submit min-w-[200px] justify-center"
               >
                 {isLoading ? (
                   <>
