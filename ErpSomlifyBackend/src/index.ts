@@ -58,8 +58,8 @@ const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     const allowedOrigins = [
       // "https://newsagal.com",
-      // "https://www.newsagal.com",
-      "http://localhost:5173",
+      "https://www.newsagal.com",
+      // "http://localhost:5173",
     ];
 
     // Allow Postman / server requests (no origin)
